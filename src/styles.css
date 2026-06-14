@@ -1,1 +1,283 @@
-/* You can add global styles to this file, and also import other style files */
+/* =========================
+   GLOBAL STYLES - LifeHub Application
+   ========================= */
+
+/* =========================
+   LIGHT THEME (DEFAULT)
+   ========================= */
+
+:root {
+  /* Backgrounds */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-tertiary: #e2e8f0;
+
+  /* Surfaces */
+  --surface-primary: #ffffff;
+  --surface-secondary: #f8fafc;
+  --surface-hover: #f1f5f9;
+  --surface-active: #e2e8f0;
+
+  /* Borders */
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e1;
+  --border-focus: #3b82f6;
+
+  /* Text */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --text-inverse: #ffffff;
+
+  /* Brand */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-active: #1e40af;
+  --primary-light: #dbeafe;
+
+  /* Status */
+  --success: #16a34a;
+  --success-light: #dcfce7;
+
+  --warning: #d97706;
+  --warning-light: #fef3c7;
+
+  --error: #dc2626;
+  --error-light: #fee2e2;
+
+  --info: #0284c7;
+  --info-light: #dbeafe;
+
+  /* Inputs */
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
+  --input-placeholder: #94a3b8;
+
+  /* Sidebar */
+  --sidebar-bg: #ffffff;
+  --sidebar-hover: #f1f5f9;
+  --sidebar-active: #dbeafe;
+
+  /* Tables */
+  --table-header-bg: #f8fafc;
+  --table-row-hover: #f8fafc;
+
+  /* Charts */
+  --chart-blue: #3b82f6;
+  --chart-green: #22c55e;
+  --chart-orange: #f59e0b;
+  --chart-red: #ef4444;
+  --chart-purple: #8b5cf6;
+  --chart-cyan: #06b6d4;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.08);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+}
+
+/* =========================
+   DARK THEME
+   ========================= */
+
+[data-theme="dark"],
+.dark-theme {
+  /* Backgrounds */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+
+  /* Surfaces */
+  --surface-primary: #1e293b;
+  --surface-secondary: #273449;
+  --surface-hover: #334155;
+  --surface-active: #475569;
+
+  /* Borders */
+  --border-primary: #334155;
+  --border-secondary: #475569;
+  --border-focus: #60a5fa;
+
+  /* Text */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-inverse: #0f172a;
+
+  /* Brand */
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-active: #93c5fd;
+  --primary-light: rgba(59, 130, 246, 0.15);
+
+  /* Status */
+  --success: #22c55e;
+  --success-light: rgba(34, 197, 94, 0.15);
+
+  --warning: #f59e0b;
+  --warning-light: rgba(245, 158, 11, 0.15);
+
+  --error: #ef4444;
+  --error-light: rgba(239, 68, 68, 0.15);
+
+  --info: #38bdf8;
+  --info-light: rgba(56, 189, 248, 0.15);
+
+  /* Inputs */
+  --input-bg: #273449;
+  --input-border: #475569;
+  --input-placeholder: #94a3b8;
+
+  /* Sidebar */
+  --sidebar-bg: #111827;
+  --sidebar-hover: #1f2937;
+  --sidebar-active: rgba(59, 130, 246, 0.15);
+
+  /* Tables */
+  --table-header-bg: #273449;
+  --table-row-hover: #334155;
+
+  /* Charts */
+  --chart-blue: #60a5fa;
+  --chart-green: #4ade80;
+  --chart-orange: #fbbf24;
+  --chart-red: #f87171;
+  --chart-purple: #a78bfa;
+  --chart-cyan: #22d3ee;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.30);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.35);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+}
+
+
+/* =========================
+   BASE STYLES
+   ========================= */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure dark theme is applied properly */
+body.dark-theme,
+html.dark-theme {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Default link styles */
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--primary-hover);
+}
+
+/* Remove default browser styles for common elements */
+* {
+  box-sizing: border-box;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  transition: var(--transition-normal);
+}
+
+input, textarea, select {
+  font-family: inherit;
+}
+
+/* Utility */
+.centered { display: flex; align-items: center; justify-content: center; }
+
+/* Glassmorphism helpers */
+.glass {
+	backdrop-filter: blur(16px) saturate(130%);
+	-webkit-backdrop-filter: blur(16px) saturate(130%);
+}
+
+/* Light theme specifics */
+:root {
+	--surface-rgba: 255,255,255;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+	--bg: linear-gradient(180deg, #020617 0%, #071025 100%);
+	--surface: rgba(10,18,37,0.94);
+	--surface-border: rgba(255,255,255,0.08);
+	--text: #f8fafc;
+	--muted: #a1a8c1;
+	--primary: #7c3aed;
+	--primary-strong: #5b21b6;
+	--error: #ff9e9e;
+	--card-shadow: 0 24px 64px rgba(0,0,0,0.45);
+	--input-bg: rgba(255,255,255,0.10);
+	--input-border: rgba(255,255,255,0.24);
+	--input-hover-bg: rgba(255,255,255,0.12);
+	--input-hover-shadow: rgba(255,255,255,0.16);
+	--btn-hover-shadow: 0 12px 24px rgba(124,58,237,0.18);
+	--btn-hover-filter: brightness(1.03);
+	--toggle-bg: rgba(255,255,255,0.08);
+	--toggle-border: rgba(255,255,255,0.14);
+	--toggle-hover-bg: rgba(255,255,255,0.14);
+}
+
+[data-theme="dark"] .glass {
+	background: rgba(255,255,255,0.08);
+	border: 1px solid rgba(255,255,255,0.20);
+	box-shadow: 0 34px 80px rgba(0,0,0,0.40);
+	backdrop-filter: blur(40px) saturate(150%);
+	-webkit-backdrop-filter: blur(40px) saturate(150%);
+}
+
+html[data-theme="dark"] .mat-form-field-appearance-outline .mat-form-field-flex {
+	border-color: rgba(255,255,255,0.20) !important;
+	background: rgba(255,255,255,0.08) !important;
+}
+
+html[data-theme="dark"] .mat-form-field-appearance-outline:hover .mat-form-field-flex {
+	border-color: rgba(255,255,255,0.24) !important;
+	background: rgba(255,255,255,0.08) !important;
+	box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08) !important;
+}
+
+[data-theme="light"] .glass {
+	background: rgba(255,255,255,0.85);
+	border: 1px solid rgba(0,0,0,0.08);
+}
+
+

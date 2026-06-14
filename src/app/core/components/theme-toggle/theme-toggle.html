@@ -1,0 +1,21 @@
+<label class="theme-toggle">
+  <span class="theme-toggle__wrap">
+    <input
+      type="checkbox"
+      class="theme-toggle__toggle"
+      [checked]="theme.theme === 'dark'"
+      (change)="toggle()"
+      aria-label="Toggle theme"
+    />
+    <span class="theme-toggle__track"></span>
+    <span class="theme-toggle__thumb">
+      <span  class="theme-toggle__icon theme-toggle__icon--sun" aria-hidden="true"></span>
+      <span class="theme-toggle__icon theme-toggle__icon--moon" aria-hidden="true"></span>
+    </span>
+  </span>
+  <span class="theme-toggle__label">
+    <mat-icon>
+      {{ theme.theme === 'dark' ? 'light_mode' : 'dark_mode' }}
+    </mat-icon>
+  </span>
+</label>

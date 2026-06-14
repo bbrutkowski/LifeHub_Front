@@ -1,0 +1,187 @@
+<div class="auth-container">
+  <!-- LEFT SECTION - Logo & Description -->
+  <div class="auth-left">
+    <div class="left-content">
+      <div class="logo-wrapper">
+        <svg class="logo-icon" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- LifeHub Logo - Home/Hub concept -->
+          <circle cx="60" cy="60" r="55" fill="none" stroke="currentColor" stroke-width="3" opacity="0.2"/>
+          
+          <!-- Main shape -->
+          <g transform="translate(60, 60)">
+            <!-- Heart representing life -->
+            <path d="M -15 -10 Q -25 -20 -30 -15 Q -35 -10 -30 0 L 0 25 L 30 0 Q 35 -10 30 -15 Q 25 -20 15 -10" 
+                  fill="currentColor" opacity="0.9"/>
+            
+            <!-- Hub center circles -->
+            <circle cx="0" cy="5" r="4" fill="currentColor" opacity="0.7"/>
+            <circle cx="-8" cy="10" r="3" fill="currentColor" opacity="0.5"/>
+            <circle cx="8" cy="10" r="3" fill="currentColor" opacity="0.5"/>
+          </g>
+        </svg>
+      </div>
+      
+      <h1 class="logo-text">LifeHub</h1>
+      
+      <p class="description">
+        Your health and lifestyle management app. 
+        Track your progress, achieve your goals, and build healthy habits with our community.
+      </p>
+      
+      <div class="features">
+        <div class="feature-item">
+          <span class="feature-icon">✓</span>
+          <span class="feature-text">Health Monitoring</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">✓</span>
+          <span class="feature-text">Habit Tracking</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">✓</span>
+          <span class="feature-text">Community & Support</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SECTION - Auth Forms -->
+  <div class="auth-right">
+    <div class="auth-card">
+      <div class="auth-card-header">
+        <div class="auth-tabs">
+          <button 
+            class="tab-button" 
+            [class.active]="!isSignUp"
+            (click)="isSignUp = false"
+            type="button">
+            Sign In
+          </button>
+          <button 
+            class="tab-button" 
+            [class.active]="isSignUp"
+            (click)="isSignUp = true"
+            type="button">
+            Sign Up
+          </button>
+        </div>
+        <app-theme-toggle class="theme-switch"></app-theme-toggle>
+      </div>
+
+      <!-- SIGN IN FORM -->
+      <form *ngIf="!isSignUp" [formGroup]="loginForm" (ngSubmit)="submitLogin()" class="auth-form">
+        <h2 class="form-title">Welcome back</h2>
+        
+        <div class="form-group">
+          <label for="login-email" class="form-label">Email Address</label>
+          <input 
+            id="login-email"
+            type="email" 
+            formControlName="email"
+            class="form-input"
+            placeholder="Enter your email"
+            autocomplete="email" />       
+        </div>
+
+        <div class="form-group">
+          <label for="login-password" class="form-label">Password</label>
+          <input 
+            id="login-password"
+            type="password" 
+            formControlName="password"
+            class="form-input"
+            placeholder="Enter your password"
+            autocomplete="current-password" />     
+        </div>
+
+        <div class="form-actions">
+          <!-- <label class="checkbox-label">
+            <input type="checkbox" class="checkbox-input" />
+            <span>Remember me</span>
+          </label> -->
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <button 
+          type="submit" 
+          class="btn btn-primary"
+          [disabled]="loading || loginForm.invalid">
+          {{ loading ? 'Signing in...' : 'Sign In' }}
+        </button>
+
+        <div *ngIf="loginError" class="alert alert-error">{{ loginError }}</div>
+      </form>
+
+      <!-- SIGN UP FORM -->
+      <form *ngIf="isSignUp" [formGroup]="signupForm" (ngSubmit)="submitSignUp()" class="auth-form">
+        <h2 class="form-title">Create account</h2>
+        
+        <div class="form-group">
+          <label for="signup-name" class="form-label">Full Name</label>
+          <input 
+            id="signup-name"
+            type="text" 
+            formControlName="name"
+            class="form-input"
+            placeholder="Enter your name"
+            autocomplete="name" />
+          <div *ngIf="signupForm.get('name')?.invalid && signupForm.get('name')?.touched" class="error-message">
+            Name is required (minimum 2 characters)
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="signup-email" class="form-label">Email Address</label>
+          <input 
+            id="signup-email"
+            type="email" 
+            formControlName="email"
+            class="form-input"
+            placeholder="Enter your email"
+            autocomplete="email" />
+          <div *ngIf="signupForm.get('email')?.invalid && signupForm.get('email')?.touched" class="error-message">
+            Please enter a valid email address
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="signup-password" class="form-label">Password</label>
+          <input 
+            id="signup-password"
+            type="password" 
+            formControlName="password"
+            class="form-input"
+            placeholder="Create a password"
+            autocomplete="new-password" />
+          <div *ngIf="signupForm.get('password')?.invalid && signupForm.get('password')?.touched" class="error-message">
+            Password is required (minimum 6 characters)
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="signup-confirm" class="form-label">Confirm Password</label>
+          <input 
+            id="signup-confirm"
+            type="password" 
+            formControlName="confirmPassword"
+            class="form-input"
+            placeholder="Confirm your password"
+            autocomplete="new-password" />
+          <div *ngIf="signupForm.get('confirmPassword')?.invalid && signupForm.get('confirmPassword')?.touched" class="error-message">
+            Passwords do not match
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          class="btn btn-primary"
+          [disabled]="loading || signupForm.invalid">
+          {{ loading ? 'Creating account...' : 'Sign Up' }}
+        </button>
+
+        <div *ngIf="registerError" class="alert alert-error">{{ registerError }}</div>
+        <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+      </form>
+    </div>
+  </div>
+</div>
