@@ -87,12 +87,12 @@ export class Login {
     const { email, password } = this.loginForm.value as { email: string; password: string };
 
     this._userService.login(email, password).pipe(
-      map(res => res?.token ?? res?.accessToken ?? res?.access_token),
-      tap(token => {
-        if (!token) {
+      tap(response => {
+        if (!response?.token) {
           throw new Error('No token received');
         }
-        this._auth.setToken(token);
+        this._auth.setToken(response.token);
+        this._userService.storeUserData(response.userId, response.username);
       }),
       finalize(() => {
         this.loading = false;
@@ -101,10 +101,13 @@ export class Login {
         next: () => {
           this._router.navigate(['/dashboard']);
         },
-      error: err => {
-        this.loginError = err?.error?.message ?? err?.message ?? 'Login failed';
-      }
-    });
+        error: err => {
+          this.loginError =
+            err?.error?.message ??
+            err?.message ??
+            'Login failed';
+        }
+      });
   }
 
   submitSignUp() {
