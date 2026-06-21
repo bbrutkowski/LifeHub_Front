@@ -5,7 +5,7 @@ import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private baseUrl = environment.apiBaseUrl;
+  private readonly baseUrl = environment.apiBaseUrl;
 
   constructor(private http: HttpClient) {}
 
@@ -18,11 +18,11 @@ export class ApiService {
     return this.http.get<T>(this.buildUrl(path), { params, headers });
   }
 
-  post<T>(path: string, body: any, params?: HttpParams, headers?: HttpHeaders): Observable<T> {
+  post<T>(path: string, body: unknown, params?: HttpParams, headers?: HttpHeaders): Observable<T> {
     return this.http.post<T>(this.buildUrl(path), body, { params, headers });
   }
 
-  put<T>(path: string, body: any, params?: HttpParams, headers?: HttpHeaders): Observable<T> {
+  put<T>(path: string, body: unknown, params?: HttpParams, headers?: HttpHeaders): Observable<T> {
     return this.http.put<T>(this.buildUrl(path), body, { params, headers });
   }
 

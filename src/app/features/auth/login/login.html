@@ -105,8 +105,6 @@
             [disabled]="loading || loginForm.invalid">
             {{ loading ? 'Signing in...' : 'Sign In' }}
           </button>
-
-          <div *ngIf="loginError" class="alert alert-error">{{ loginError }}</div>
         </ng-container>
 
         <ng-template #forgotPasswordOnlyForm>
@@ -135,9 +133,6 @@
               </button>
               <button type="button" class="btn btn-secondary" (click)="closeForgotPassword()">Cancel</button>
             </div>
-
-            <div *ngIf="resetError" class="alert alert-error">{{ resetError }}</div>
-            <div *ngIf="resetSuccessMessage" class="alert alert-success">{{ resetSuccessMessage }}</div>
           </div>
         </ng-template>
       </form>
@@ -208,9 +203,6 @@
           [disabled]="loading || signupForm.invalid">
           {{ loading ? 'Creating account...' : 'Sign Up' }}
         </button>
-
-        <div *ngIf="registerError" class="alert alert-error">{{ registerError }}</div>
-        <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
       </form>
     </div>
   </div>

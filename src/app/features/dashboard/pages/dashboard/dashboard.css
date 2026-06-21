@@ -8,7 +8,7 @@
 
 .dashboard-shell {
   display: grid;
-  grid-template-columns: clamp(220px, 17vw, 280px) minmax(0, 1fr);
+  grid-template-columns: clamp(200px, 14vw, 250px) minmax(0, 1fr);
   height: 100dvh;
   overflow: hidden;
 }
@@ -36,15 +36,20 @@ html[data-theme="dark"] .dashboard-shell {
 }
 
 .brand-mark {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
   display: grid;
   place-items: center;
   background: linear-gradient(135deg, var(--primary), var(--primary-hover));
   color: white;
-  font-weight: 800;
-  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.18);
+}
+
+.brand-logo-icon {
+  width: 30px;
+  height: 30px;
+  color: white;
 }
 
 .brand-name {
@@ -65,17 +70,20 @@ html[data-theme="dark"] .dashboard-shell {
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  margin-inline: -18px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
+  gap: 14px;
+  padding: 11px 10px;
   border-radius: 14px;
   color: var(--text-secondary);
   text-decoration: none;
   transition: background-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .nav-item:hover {
@@ -90,7 +98,8 @@ html[data-theme="dark"] .dashboard-shell {
 }
 
 .nav-icon {
-  width: 22px;
+  width: 24px;
+  font-size: 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -143,7 +152,7 @@ html[data-theme="dark"] .dashboard-shell {
   display: flex;
   flex-direction: column;
   gap: clamp(8px, 0.8vw, 14px);
-  padding: var(--page-gutter);
+  padding: clamp(6px, 0.8vw, 10px);
   min-height: 0;
   overflow: hidden;
 }
@@ -249,7 +258,7 @@ button:active:not(:disabled) {
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(8px, 0.8vw, 14px);
+  gap: clamp(4px, 0.5vw, 8px);
   flex-shrink: 0;
 }
 
@@ -308,7 +317,7 @@ button:active:not(:disabled) {
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr 1.1fr 0.8fr;
-  gap: clamp(8px, 0.8vw, 14px);
+  gap: clamp(4px, 0.5vw, 8px);
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -675,7 +684,7 @@ html[data-theme="dark"] .sidebar .profile-meta {
 
 @media (max-width: 1280px) {
   .dashboard-shell {
-    grid-template-columns: 210px minmax(0, 1fr);
+    grid-template-columns: 190px minmax(0, 1fr);
   }
 
   .dashboard-grid {
@@ -739,7 +748,7 @@ html[data-theme="dark"] .sidebar .profile-meta {
 
 @media (max-width: 640px) {
   .dashboard-content {
-    padding: clamp(12px, 3vw, 16px);
+    padding: clamp(6px, 1.6vw, 10px);
   }
 
   .sidebar {
