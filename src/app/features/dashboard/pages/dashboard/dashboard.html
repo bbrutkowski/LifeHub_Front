@@ -1,1 +1,157 @@
-<p>dashboard works!</p>
+<div class="dashboard-shell">
+	<aside class="sidebar">
+		<div class="brand">
+			<div class="brand-mark">H</div>
+			<div>
+				<div class="brand-name">LifeHub</div>			
+			</div>
+		</div>
+
+		<nav class="nav-list">
+			<a
+				*ngFor="let item of navItems"
+				href="#"
+				class="nav-item"
+				[class.active]="item.active">
+				<span class="nav-icon">{{ item.icon }}</span>
+				<span>{{ item.label }}</span>
+			</a>
+		</nav>
+
+		<div class="profile-card">
+			<div class="profile-avatar">KN</div>
+			<div class="profile-meta">
+				<strong>Kamil Nowak</strong>
+				<span>kamil@example.com</span>
+			</div>
+		</div>
+	</aside>
+
+	<main class="dashboard-content">
+		<header class="topbar">
+			<div class="topbar-actions">
+				<label class="search-box">
+					<input type="text" placeholder="Search..." />
+					<span>⌕</span>
+				</label>
+				<button class="icon-button" type="button">🔔</button>
+				<button class="primary-button" type="button">+ Add widget</button>
+				<app-theme-toggle class="dashboard-theme-switch"></app-theme-toggle>
+			</div>
+		</header>
+
+		<section class="stats-grid">
+			<article class="stat-card" *ngFor="let card of statCards" [attr.data-accent]="card.accent">
+				<div class="stat-icon">{{ card.icon }}</div>
+				<div>
+					<div class="stat-title">{{ card.title }}</div>
+					<div class="stat-value">{{ card.value }}</div>
+					<div class="stat-subtitle">{{ card.subtitle }}</div>
+				</div>
+			</article>
+		</section>
+
+		<section class="dashboard-grid">
+			<article class="panel weather-panel">
+				<div class="panel-header">
+					<div>
+						<p class="panel-kicker">Warsaw, Poland</p>
+						<h2>18°C</h2>
+					</div>
+					<div class="weather-icon">☀</div>
+				</div>
+				<div class="weather-meta">
+					<span>Sunny</span>
+					<span>Feels like 18°C</span>
+				</div>
+				<div class="weather-details">
+					<div><span>Wind</span><strong>12 km/h</strong></div>
+					<div><span>Humidity</span><strong>65%</strong></div>
+					<div><span>UV</span><strong>5 - Moderate</strong></div>
+				</div>
+			</article>
+
+			<article class="panel tasks-panel">
+				<div class="panel-header compact">
+					<h2>Today's Tasks</h2>
+					<a href="#">View All</a>
+				</div>
+				<ul class="task-list">
+					<li *ngFor="let task of tasks" [class.done]="task.done">
+						<label>
+							<input type="checkbox" [checked]="task.done" />
+							<span>{{ task.title }}</span>
+						</label>
+						<div class="task-meta">
+							<small>{{ task.category }}</small>
+							<span>{{ task.time }}</span>
+						</div>
+					</li>
+				</ul>
+				<button class="link-button" type="button">+ Add New Task</button>
+			</article>
+
+			<article class="panel chart-panel">
+				<div class="panel-header compact">
+					<h2>Financial Overview</h2>
+					<button class="chip" type="button">This Month</button>
+				</div>
+				<div class="chart-legend">
+					<span><i class="dot income"></i> Income</span>
+					<span><i class="dot expenses"></i> Expenses</span>
+				</div>
+				<div class="chart-placeholder">
+					<div class="chart-line income"></div>
+					<div class="chart-line expenses"></div>
+				</div>
+			</article>
+
+			<article class="panel habits-panel">
+				<div class="panel-header compact">
+					<h2>Your Habits</h2>
+					<a href="#">View All</a>
+				</div>
+				<div class="habits-grid">
+					<div class="habit-card" *ngFor="let habit of habits" [attr.data-accent]="habit.accent">
+						<div class="habit-icon">{{ habit.icon }}</div>
+						<strong>{{ habit.title }}</strong>
+						<span>{{ habit.progress }}</span>
+					</div>	
+				</div>
+			</article>
+
+			<article class="panel activity-panel">
+				<div class="panel-header compact">
+					<h2>Developer Activity</h2>
+					<button class="chip" type="button">Last 7 Days</button>
+				</div>
+				<div class="activity-stats">
+					<div><strong>47</strong><span>Commits</span></div>
+					<div><strong>12</strong><span>Pull Requests</span></div>
+					<div><strong>3</strong><span>Projects</span></div>
+					<div><strong>24h</strong><span>Coding Time</span></div>
+				</div>
+				<div class="heatmap">
+					<span *ngFor="let cell of [].constructor(70); let index = index" [attr.data-level]="(index % 5)"></span>
+				</div>
+			</article>
+
+			<article class="panel reminders-panel">
+				<div class="panel-header compact">
+					<h2>Upcoming Reminders</h2>
+					<a href="#">View All</a>
+				</div>
+				<div class="reminder-list">
+					<div class="reminder-item" *ngFor="let reminder of reminders">
+						<div class="reminder-dot"></div>
+						<div>
+							<strong>{{ reminder.title }}</strong>
+							<p>{{ reminder.time }}</p>
+						</div>
+						<span class="reminder-tag">{{ reminder.tag }}</span>
+					</div>
+				</div>
+			</article>
+		</section>
+	</main>
+</div>

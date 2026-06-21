@@ -1,0 +1,9 @@
+ :host {
+	display: block;
+	min-height: 100dvh;
+}
+
+.main {
+	min-height: 100dvh;
+	width: 100%;
+}

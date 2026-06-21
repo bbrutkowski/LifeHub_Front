@@ -17,21 +17,8 @@ export class ThemeService {
       saved = null;
     }
 
-    const systemPrefersDark =
-      typeof window !== 'undefined' &&
-      typeof window.matchMedia !== 'undefined' &&
-      window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    this.current = saved ?? (systemPrefersDark ? 'dark' : 'light');
+    this.current = saved ?? 'light';
     this.apply(this.current);
-
-    if (!saved && typeof window !== 'undefined' && typeof window.matchMedia !== 'undefined') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      mediaQuery.addEventListener?.('change', (event) => {
-        this.current = event.matches ? 'dark' : 'light';
-        this.apply(this.current);
-      });
-    }
   }
 
   get theme(): Theme {
