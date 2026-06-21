@@ -23,6 +23,10 @@ export class UserService {
     return this._apiService.post(`${this._basePath}/login`, { email, password });
   }
 
+  resetPassword(email: string): Observable<any> {
+    return this._apiService.post(`${this._basePath}/resetPassword`, { email });
+  }
+
   getUser(id: string): Observable<any> {
     return this._apiService.get(`${this._basePath}/${id}`);
   }

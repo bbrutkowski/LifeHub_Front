@@ -53,14 +53,14 @@
           <button 
             class="tab-button" 
             [class.active]="!isSignUp"
-            (click)="isSignUp = false"
+            (click)="openSignIn()"
             type="button">
             Sign In
           </button>
           <button 
             class="tab-button" 
             [class.active]="isSignUp"
-            (click)="isSignUp = true"
+            (click)="openSignUp()"
             type="button">
             Sign Up
           </button>
@@ -70,46 +70,76 @@
 
       <!-- SIGN IN FORM -->
       <form *ngIf="!isSignUp" [formGroup]="loginForm" (ngSubmit)="submitLogin()" class="auth-form">
-        <h2 class="form-title">Welcome back</h2>
-        
-        <div class="form-group">
-          <label for="login-email" class="form-label">Email Address</label>
-          <input 
-            id="login-email"
-            type="email" 
-            formControlName="email"
-            class="form-input"
-            placeholder="Enter your email"
-            autocomplete="email" />       
-        </div>
+        <ng-container *ngIf="!showForgotPasswordForm; else forgotPasswordOnlyForm">
+          <h2 class="form-title">Welcome back</h2>
+          
+          <div class="form-group">
+            <label for="login-email" class="form-label">Email Address</label>
+            <input 
+              id="login-email"
+              type="email" 
+              formControlName="email"
+              class="form-input"
+              placeholder="Enter your email"
+              autocomplete="email" />       
+          </div>
 
-        <div class="form-group">
-          <label for="login-password" class="form-label">Password</label>
-          <input 
-            id="login-password"
-            type="password" 
-            formControlName="password"
-            class="form-input"
-            placeholder="Enter your password"
-            autocomplete="current-password" />     
-        </div>
+          <div class="form-group">
+            <label for="login-password" class="form-label">Password</label>
+            <input 
+              id="login-password"
+              type="password" 
+              formControlName="password"
+              class="form-input"
+              placeholder="Enter your password"
+              autocomplete="current-password" />     
+          </div>
 
-        <div class="form-actions">
-          <!-- <label class="checkbox-label">
-            <input type="checkbox" class="checkbox-input" />
-            <span>Remember me</span>
-          </label> -->
-          <a href="#" class="forgot-link">Forgot password?</a>
-        </div>
+          <div class="form-actions">
+            <button type="button" class="forgot-link" (click)="openForgotPassword()">Forgot password?</button>
+          </div>
 
-        <button 
-          type="submit" 
-          class="btn btn-primary"
-          [disabled]="loading || loginForm.invalid">
-          {{ loading ? 'Signing in...' : 'Sign In' }}
-        </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="loading || loginForm.invalid">
+            {{ loading ? 'Signing in...' : 'Sign In' }}
+          </button>
 
-        <div *ngIf="loginError" class="alert alert-error">{{ loginError }}</div>
+          <div *ngIf="loginError" class="alert alert-error">{{ loginError }}</div>
+        </ng-container>
+
+        <ng-template #forgotPasswordOnlyForm>
+          <div class="forgot-password-panel" [formGroup]="resetPasswordForm">
+            <h2 class="form-title">Reset password</h2>
+
+            <label for="forgot-email" class="form-label">Email Address</label>
+            <input
+              id="forgot-email"
+              type="email"
+              formControlName="email"
+              class="form-input"
+              placeholder="Enter your email"
+              autocomplete="email" />
+            <div *ngIf="resetPasswordForm.get('email')?.invalid && resetPasswordForm.get('email')?.touched" class="error-message">
+              Please enter a valid email address
+            </div>
+
+            <div class="forgot-actions">
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="submitResetPassword()"
+                [disabled]="resetLoading || resetPasswordForm.invalid">
+                {{ resetLoading ? 'Sending...' : 'reset Password' }}
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="closeForgotPassword()">Cancel</button>
+            </div>
+
+            <div *ngIf="resetError" class="alert alert-error">{{ resetError }}</div>
+            <div *ngIf="resetSuccessMessage" class="alert alert-success">{{ resetSuccessMessage }}</div>
+          </div>
+        </ng-template>
       </form>
 
       <!-- SIGN UP FORM -->

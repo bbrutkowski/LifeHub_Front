@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ApplicationRef, Component, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -10,7 +10,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { UserService } from '../../user/user-service';
-import { finalize, map, tap } from 'rxjs';
+import { finalize, tap, timer } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   standalone: true,
@@ -30,14 +31,22 @@ import { finalize, map, tap } from 'rxjs';
   styleUrls: ['./login.css'],
 })
 export class Login {
+  private destroyRef = inject(DestroyRef);
+  private _appRef = inject(ApplicationRef);
+
   loginForm: FormGroup;
   signupForm: FormGroup;
+  resetPasswordForm: FormGroup;
 
   isSignUp = false;
+  showForgotPasswordForm = false;
   loading = false;
+  resetLoading = false;
   loginError: string | null = null;
   registerError: string | null = null;
+  resetError: string | null = null;
   successMessage: string | null = null;
+  resetSuccessMessage: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -56,6 +65,10 @@ export class Login {
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]],
     }, { validators: this.passwordMatchValidator });
+
+    this.resetPasswordForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+    });
   }
 
   passwordMatchValidator(group: FormGroup): { [key: string]: any } | null {
@@ -66,9 +79,35 @@ export class Login {
 
   toggleMode() {
     this.isSignUp = !this.isSignUp;
+    this.showForgotPasswordForm = false;
     this.loginError = null;
     this.registerError = null;
+    this.resetError = null;
+    this.resetSuccessMessage = null;
     this.successMessage = null;
+  }
+
+  openForgotPassword() {
+    this.showForgotPasswordForm = true;
+    this.resetError = null;
+    this.resetSuccessMessage = null;
+    this.resetPasswordForm.reset({ email: this.loginForm.get('email')?.value ?? '' });
+  }
+
+  openSignIn() {
+    this.isSignUp = false;
+    this.closeForgotPassword();
+  }
+
+  openSignUp() {
+    this.isSignUp = true;
+    this.closeForgotPassword();
+  }
+
+  closeForgotPassword() {
+    this.showForgotPasswordForm = false;
+    this.resetError = null;
+    this.resetSuccessMessage = null;
   }
 
   get currentForm(): FormGroup {
@@ -129,15 +168,50 @@ export class Login {
       next: (res) => {
         this.successMessage = 'Account created successfully! Please sign in.';
         this.signupForm.reset();
-        setTimeout(() => {
-          this.isSignUp = false;
-          this.successMessage = null;
-        }, 2000);
         this.loading = false;
+        timer(2000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+          this.successMessage = null;
+          this.openSignIn();
+          this._appRef.tick();
+        });
       },
       error: (err) => {
         this.registerError = err?.error?.message ?? err?.message ?? 'Registration failed';
         this.loading = false;
+      },
+    });
+  }
+
+  submitResetPassword() {
+    if (this.resetPasswordForm.invalid) {
+      this.resetPasswordForm.markAllAsTouched();
+      return;
+    }
+
+    this.resetLoading = true;
+    this.resetError = null;
+    this.resetSuccessMessage = null;
+
+    const { email } = this.resetPasswordForm.value as { email: string };
+
+    this._userService.resetPassword(email).pipe(
+      finalize(() => {
+        this.resetLoading = false;
+      })
+    ).subscribe({
+      next: () => {
+        this.resetSuccessMessage = 'Password reset instructions have been sent.';
+        timer(2500).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+          this.resetSuccessMessage = null;
+          this.openSignIn();
+          this._appRef.tick();
+        });
+      },
+      error: (err) => {
+        this.resetError =
+          err?.error?.message ??
+          err?.message ??
+          'Sending reset instructions failed';
       },
     });
   }

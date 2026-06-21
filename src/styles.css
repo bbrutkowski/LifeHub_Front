@@ -7,6 +7,10 @@
    ========================= */
 
 :root {
+  --page-max-width: 1600px;
+  --page-gutter: clamp(16px, 2vw, 32px);
+  --page-section-gap: clamp(12px, 1.4vw, 20px);
+
   /* Backgrounds */
   --bg-primary: #f8fafc;
   --bg-secondary: #f1f5f9;
@@ -177,13 +181,14 @@
    ========================= */
 
 html, body {
-  height: 100%;
+  min-height: 100%;
   margin: 0;
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 /* Ensure dark theme is applied properly */
@@ -213,7 +218,12 @@ button {
   cursor: pointer;
   border: none;
   font-family: inherit;
-  transition: var(--transition-normal);
+  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast), filter var(--transition-fast);
+}
+
+button:hover:not(:disabled),
+button:active:not(:disabled) {
+  transform: none;
 }
 
 input, textarea, select {

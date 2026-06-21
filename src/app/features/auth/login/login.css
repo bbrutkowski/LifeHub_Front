@@ -340,15 +340,49 @@
 }
 
 .forgot-link {
+  background: none;
+  border: none;
+  padding: 0;
   color: var(--primary);
-  text-decoration: none;
+  text-decoration: underline;
   font-weight: 500;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
   transition: color var(--transition-fast);
 }
 
 .forgot-link:hover {
   color: var(--primary-hover);
-  text-decoration: underline;
+}
+
+.forgot-password-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+}
+
+.forgot-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.forgot-actions .btn {
+  width: auto;
+  min-width: 140px;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface-hover);
 }
 
 .checkbox-terms {
@@ -387,7 +421,6 @@
 
 .btn-primary:hover:not(:disabled) {
   background: var(--primary-hover);
-  transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
 

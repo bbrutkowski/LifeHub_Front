@@ -10,6 +10,18 @@ To start a local development server, run:
 ng serve
 ```
 
+## Dependencies
+
+The project uses the following Angular packages and libraries:
+
+- `@angular/cli` for development tooling and local commands
+- `@angular/build` for the application builder
+- `@angular/material` and `@angular/cdk` for UI components
+- `zone.js` for Angular change detection and async handling
+- `@angular/ssr` and `@angular/platform-server` for server-side rendering
+
+Run `npm i` to install all project dependencies, including `@angular/cli` from `devDependencies`.
+
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
 ## Code scaffolding
