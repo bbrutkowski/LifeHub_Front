@@ -1,4 +1,4 @@
-import { ApplicationRef, Component, DestroyRef, inject } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -9,7 +9,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { UserService } from '../../user/user-service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { finalize, tap, timer } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -25,6 +27,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     MatInputModule,
     MatButtonModule,
     MatIconModule,
+    MatSnackBarModule,
     ThemeToggle
   ],
   templateUrl: './login.html',
@@ -32,7 +35,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 })
 export class Login {
   private destroyRef = inject(DestroyRef);
-  private _appRef = inject(ApplicationRef);
 
   loginForm: FormGroup;
   signupForm: FormGroup;
@@ -42,17 +44,13 @@ export class Login {
   showForgotPasswordForm = false;
   loading = false;
   resetLoading = false;
-  loginError: string | null = null;
-  registerError: string | null = null;
-  resetError: string | null = null;
-  successMessage: string | null = null;
-  resetSuccessMessage: string | null = null;
 
   constructor(
     private fb: FormBuilder,
     private _userService: UserService,
     private _auth: AuthService,
-    private _router: Router
+    private _router: Router,
+    private _notification: NotificationService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -77,20 +75,8 @@ export class Login {
     return password === confirmPassword ? null : { passwordMismatch: true };
   }
 
-  toggleMode() {
-    this.isSignUp = !this.isSignUp;
-    this.showForgotPasswordForm = false;
-    this.loginError = null;
-    this.registerError = null;
-    this.resetError = null;
-    this.resetSuccessMessage = null;
-    this.successMessage = null;
-  }
-
   openForgotPassword() {
     this.showForgotPasswordForm = true;
-    this.resetError = null;
-    this.resetSuccessMessage = null;
     this.resetPasswordForm.reset({ email: this.loginForm.get('email')?.value ?? '' });
   }
 
@@ -106,12 +92,6 @@ export class Login {
 
   closeForgotPassword() {
     this.showForgotPasswordForm = false;
-    this.resetError = null;
-    this.resetSuccessMessage = null;
-  }
-
-  get currentForm(): FormGroup {
-    return this.isSignUp ? this.signupForm : this.loginForm;
   }
 
   submitLogin() {
@@ -121,7 +101,6 @@ export class Login {
     }
 
     this.loading = true;
-    this.loginError = null;
 
     const { email, password } = this.loginForm.value as { email: string; password: string };
 
@@ -138,13 +117,15 @@ export class Login {
       })
       ).subscribe({
         next: () => {
+          this._notification.success('Login successful. Welcome back!');
           this._router.navigate(['/dashboard']);
         },
         error: err => {
-          this.loginError =
+          this._notification.error(
             err?.error?.message ??
             err?.message ??
-            'Login failed';
+            'Login failed'
+          );
         }
       });
   }
@@ -156,7 +137,6 @@ export class Login {
     }
 
     this.loading = true;
-    this.registerError = null;
 
     const { name, email, password } = this.signupForm.value as {
       name: string;
@@ -165,18 +145,16 @@ export class Login {
     };
 
     this._userService.registerUser(name, email, password).subscribe({
-      next: (res) => {
-        this.successMessage = 'Account created successfully! Please sign in.';
+      next: () => {
+        this._notification.success('Account created successfully! Please sign in.');
         this.signupForm.reset();
         this.loading = false;
         timer(2000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-          this.successMessage = null;
           this.openSignIn();
-          this._appRef.tick();
         });
       },
       error: (err) => {
-        this.registerError = err?.error?.message ?? err?.message ?? 'Registration failed';
+        this._notification.error(err?.error?.message ?? err?.message ?? 'Registration failed');
         this.loading = false;
       },
     });
@@ -189,8 +167,6 @@ export class Login {
     }
 
     this.resetLoading = true;
-    this.resetError = null;
-    this.resetSuccessMessage = null;
 
     const { email } = this.resetPasswordForm.value as { email: string };
 
@@ -200,27 +176,19 @@ export class Login {
       })
     ).subscribe({
       next: () => {
-        this.resetSuccessMessage = 'Password reset instructions have been sent.';
+        this._notification.success('Password reset instructions have been sent.');
         timer(2500).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-          this.resetSuccessMessage = null;
           this.openSignIn();
-          this._appRef.tick();
         });
       },
       error: (err) => {
-        this.resetError =
+        this._notification.error(
           err?.error?.message ??
           err?.message ??
-          'Sending reset instructions failed';
+          'Sending reset instructions failed'
+        );
       },
     });
   }
 
-  submit() {
-    if (this.isSignUp) {
-      this.submitSignUp();
-    } else {
-      this.submitLogin();
-    }
-  }
 }
