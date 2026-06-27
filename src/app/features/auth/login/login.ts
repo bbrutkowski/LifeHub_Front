@@ -106,10 +106,11 @@ export class Login {
 
     this._userService.login(email, password).pipe(
       tap(response => {
-        if (!response?.token) {
-          throw new Error('No token received');
+        const accessToken = response?.token || response?.accessToken;
+        if (!accessToken) {
+          throw new Error('No access token received');
         }
-        this._auth.setToken(response.token);
+        this._auth.setSession(accessToken, response.refreshToken);
         this._userService.storeUserData(response.userId, response.username);
       }),
       finalize(() => {

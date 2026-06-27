@@ -29,10 +29,12 @@
 		</nav>
 
 		<div class="profile-card">
-			<div class="profile-avatar">KN</div>
+			<div class="profile-avatar">{{ userInitials }}</div>
 			<div class="profile-meta">
-				<strong>Kamil Nowak</strong>
-				<span>kamil@example.com</span>
+				<button class="profile-name-button" type="button" (click)="openEditProfileModal()" title="Edytuj dane użytkownika">
+					<strong>{{ userName }}</strong>
+				</button>
+				<span [class.profile-email-empty]="!hasUserEmail">{{ userEmailDisplay }}</span>
 			</div>
 		</div>
 	</aside>
@@ -47,6 +49,7 @@
 				<button class="icon-button" type="button">🔔</button>
 				<button class="primary-button" type="button">+ Add widget</button>
 				<app-theme-toggle class="dashboard-theme-switch"></app-theme-toggle>
+				<button class="icon-button logout-icon-button" type="button" (click)="logout()" aria-label="Wyloguj" title="Wyloguj">⏻</button>
 			</div>
 		</header>
 
@@ -164,4 +167,38 @@
 			</article>
 		</section>
 	</main>
+
+	<div
+		*ngIf="isEditProfileModalOpen"
+		class="modal-backdrop"
+		role="dialog"
+		aria-modal="true"
+		aria-label="Edycja danych użytkownika"
+		(click)="closeEditProfileModal()">
+		<div class="modal-card" (click)="$event.stopPropagation()">
+			<div class="modal-header">
+				<h3>Edytuj profil</h3>
+				<button class="icon-button modal-close" type="button" (click)="closeEditProfileModal()" aria-label="Zamknij">✕</button>
+			</div>
+
+			<form class="modal-form" [formGroup]="editProfileForm" (ngSubmit)="submitEditProfile()">
+				<label class="modal-field">
+					<span>Imię i nazwisko</span>
+					<input type="text" formControlName="name" placeholder="Podaj imię i nazwisko" />
+				</label>
+
+				<label class="modal-field">
+					<span>E-mail</span>
+					<input type="email" formControlName="email" placeholder="Podaj e-mail" />
+				</label>
+
+				<div class="modal-actions">
+					<button class="chip" type="button" (click)="closeEditProfileModal()" [disabled]="isSavingProfile">Anuluj</button>
+					<button class="primary-button" type="submit" [disabled]="isSavingProfile">
+						{{ isSavingProfile ? 'Zapisywanie...' : 'Zapisz zmiany' }}
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
 </div>

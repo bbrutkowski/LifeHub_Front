@@ -1,6 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ThemeToggle } from '../../../../core/components/theme-toggle/theme-toggle';
+import { UserService } from '../../../user/user-service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 type NavItem = {
   label: string;
@@ -39,11 +42,146 @@ type ReminderItem = {
 @Component({
   standalone: true,
   selector: 'app-dashboard',
-  imports: [CommonModule, ThemeToggle],
+  imports: [CommonModule, ReactiveFormsModule, ThemeToggle],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
-export class Dashboard {
+export class Dashboard implements OnInit {
+  userName = 'Użytkownik';
+  userEmail = '';
+  userInitials = 'U';
+  isEditProfileModalOpen = false;
+  isSavingProfile = false;
+
+  readonly editProfileForm;
+
+  constructor(
+    private readonly formBuilder: FormBuilder,
+    private readonly userService: UserService,
+    private readonly authService: AuthService,
+  ) {
+    this.editProfileForm = this.formBuilder.group({
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]],
+    });
+  }
+
+  ngOnInit(): void {
+    this.loadUserSummary();
+  }
+
+  get hasUserEmail(): boolean {
+    return !!this.userEmail;
+  }
+
+  get userEmailDisplay(): string {
+    return this.userEmail || 'Adres e-mail niedostępny';
+  }
+
+  logout(): void {
+    this.authService.logout('/login');
+  }
+
+  openEditProfileModal(): void {
+    this.editProfileForm.reset({
+      name: this.userName,
+      email: this.userEmail,
+    });
+    this.isEditProfileModalOpen = true;
+  }
+
+  closeEditProfileModal(): void {
+    if (this.isSavingProfile) {
+      return;
+    }
+    this.isEditProfileModalOpen = false;
+  }
+
+  submitEditProfile(): void {
+    if (this.editProfileForm.invalid || this.isSavingProfile) {
+      this.editProfileForm.markAllAsTouched();
+      return;
+    }
+
+    const userId = this.getStoredValue('userId');
+    if (!userId) {
+      return;
+    }
+
+    const formValue = this.editProfileForm.getRawValue();
+    const name = formValue.name?.trim() ?? '';
+    const email = formValue.email?.trim() ?? '';
+
+    this.isSavingProfile = true;
+    this.userService.updateUserProfile(userId, name, email).subscribe({
+      next: (profile) => {
+        this.applyUserData(profile.name || name, profile.email || email);
+        localStorage.setItem('username', this.userName);
+        this.isEditProfileModalOpen = false;
+        this.isSavingProfile = false;
+      },
+      error: () => {
+        this.isSavingProfile = false;
+      },
+    });
+  }
+
+  private loadUserSummary(): void {
+    const storedUserId = this.getStoredValue('userId');
+    const storedUsername = this.getStoredValue('username');
+
+    if (storedUsername) {
+      this.applyUserData(storedUsername, this.userEmail);
+    }
+
+    if (!storedUserId) {
+      return;
+    }
+
+    this.userService.getUser(storedUserId).subscribe({
+      next: (profile) => {
+        const resolvedName = profile.name || storedUsername || this.userName;
+        const resolvedEmail = profile.email || this.userEmail;
+        this.applyUserData(resolvedName, resolvedEmail);
+        localStorage.setItem('username', resolvedName);
+      },
+      error: () => {
+        if (!storedUsername) {
+          this.applyUserData(this.userName, this.userEmail);
+        }
+      },
+    });
+  }
+
+  private applyUserData(name: string, email: string): void {
+    this.userName = this.normalizeName(name);
+    this.userEmail = email?.trim() ?? '';
+    this.userInitials = this.createInitials(this.userName);
+  }
+
+  private normalizeName(name: string): string {
+    const normalized = name?.trim();
+    return normalized || 'Użytkownik';
+  }
+
+  private createInitials(name: string): string {
+    const parts = name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase());
+
+    return parts.join('') || 'U';
+  }
+
+  private getStoredValue(key: string): string | null {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  }
+
   readonly navItems: NavItem[] = [
     { label: 'Dashboard', icon: '⌂', active: true },
     { label: 'Finanse', icon: '$' },
