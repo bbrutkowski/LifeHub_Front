@@ -29,9 +29,12 @@
 		</nav>
 
 		<div class="profile-card">
-			<div class="profile-avatar">{{ userInitials }}</div>
+			<div class="profile-avatar">
+				<img *ngIf="hasAvatar" class="profile-avatar-image" [src]="userAvatarUrl" [alt]="userName" />
+				<span *ngIf="!hasAvatar">{{ userInitials }}</span>
+			</div>
 			<div class="profile-meta">
-				<button class="profile-name-button" type="button" (click)="openEditProfileModal()" title="Edytuj dane użytkownika">
+				<button class="profile-name-button" type="button" (click)="openEditProfileModal()" title="Edit user details">
 					<strong>{{ userName }}</strong>
 				</button>
 				<span [class.profile-email-empty]="!hasUserEmail">{{ userEmailDisplay }}</span>
@@ -48,8 +51,31 @@
 				</label>
 				<button class="icon-button" type="button">🔔</button>
 				<button class="primary-button" type="button">+ Add widget</button>
-				<app-theme-toggle class="dashboard-theme-switch"></app-theme-toggle>
-				<button class="icon-button logout-icon-button" type="button" (click)="logout()" aria-label="Wyloguj" title="Wyloguj">⏻</button>
+				<div class="account-menu" (click)="$event.stopPropagation()">
+					<button
+						class="icon-button account-menu-trigger"
+						type="button"
+						(click)="toggleAccountMenu($event)"
+						aria-label="Menu konta"
+						title="Menu konta"
+						[attr.aria-expanded]="isAccountMenuOpen"
+						aria-haspopup="menu">
+						<svg class="account-menu-arrow" viewBox="0 0 24 24" aria-hidden="true">
+							<path d="M6 9l6 6 6-6" />
+						</svg>
+					</button>
+
+					<div *ngIf="isAccountMenuOpen" class="account-menu-dropdown" role="menu" aria-label="Opcje konta">
+						<div class="account-menu-theme-row">
+							<span>Theme</span>
+							<app-theme-toggle class="account-menu-theme-toggle"></app-theme-toggle>
+						</div>
+						<div class="account-menu-separator" role="separator" aria-hidden="true"></div>
+						<button class="account-menu-item" type="button" role="menuitem" (click)="openAccountSettings($event)">Account settings</button>
+						<div class="account-menu-separator" role="separator" aria-hidden="true"></div>
+						<button class="account-menu-item account-menu-item-danger" type="button" role="menuitem" (click)="logout()">Logout</button>
+					</div>
+				</div>
 			</div>
 		</header>
 
@@ -68,7 +94,7 @@
 			<article class="panel weather-panel">
 				<div class="panel-header">
 					<div>
-						<p class="panel-kicker">Warsaw, Poland</p>
+						<p class="panel-kicker">{{ userCityDisplay }}</p>
 						<h2>18°C</h2>
 					</div>
 					<div class="weather-icon">☀</div>
@@ -173,30 +199,146 @@
 		class="modal-backdrop"
 		role="dialog"
 		aria-modal="true"
-		aria-label="Edycja danych użytkownika"
+			aria-label="Edit Profile"
 		(click)="closeEditProfileModal()">
 		<div class="modal-card" (click)="$event.stopPropagation()">
 			<div class="modal-header">
-				<h3>Edytuj profil</h3>
-				<button class="icon-button modal-close" type="button" (click)="closeEditProfileModal()" aria-label="Zamknij">✕</button>
+				<h3>Account Settings</h3>
+				<button class="icon-button modal-close modal-close-button" type="button" (click)="closeEditProfileModal()" aria-label="Close">✕</button>
 			</div>
 
 			<form class="modal-form" [formGroup]="editProfileForm" (ngSubmit)="submitEditProfile()">
-				<label class="modal-field">
-					<span>Imię i nazwisko</span>
-					<input type="text" formControlName="name" placeholder="Podaj imię i nazwisko" />
-				</label>
+					<div class="modal-section">
+						<div>
+							<p class="modal-section-kicker">Profile</p>
+							<h4>Basic details</h4>
+						</div>
+						<div class="modal-grid">
+							<label class="modal-field modal-field-full">
+								<span>Full Name</span>
+								<input type="text" formControlName="name" placeholder="Enter your full name" />
+							</label>
 
-				<label class="modal-field">
-					<span>E-mail</span>
-					<input type="email" formControlName="email" placeholder="Podaj e-mail" />
-				</label>
+							<label class="modal-field modal-field-full">
+								<span>Email</span>
+								<input type="email" formControlName="email" placeholder="Enter your email" />
+							</label>
 
+							<label class="modal-field modal-field-full">
+								<span>Avatar URL</span>
+								<input type="url" formControlName="avatarUrl" placeholder="https://example.com/avatar.jpg" />
+							</label>
+						</div>
+					</div>
+
+					<div class="modal-section">
+						<div>
+							<p class="modal-section-kicker">Preferences</p>
+							<h4>Personal setup</h4>
+						</div>
+						<div class="modal-grid">
+							<label class="modal-field">
+								<span>Timezone</span>
+								<select formControlName="timezone">
+									<option *ngFor="let option of timezoneOptions" [value]="option.value">{{ option.label }}</option>
+								</select>
+							</label>
+
+							<label class="modal-field">
+								<span>City</span>
+								<input type="text" formControlName="city" placeholder="Enter your city" />
+							</label>
+
+							<label class="modal-field">
+								<span>Currency</span>
+								<select formControlName="currency">
+									<option *ngFor="let currency of currencyOptions" [value]="currency">{{ currency }}</option>
+								</select>
+							</label>
+
+							<label class="modal-field">
+								<span>Date format</span>
+								<select formControlName="dateFormat">
+									<option *ngFor="let option of dateFormatOptions" [value]="option.value">{{ option.label }}</option>
+								</select>
+							</label>
+
+							<label class="modal-field modal-field-full">
+								<span>Week starts on</span>
+								<select formControlName="weekStartsOn">
+									<option *ngFor="let option of weekStartOptions" [value]="option.value">{{ option.label }}</option>
+								</select>
+							</label>
+						</div>
+					</div>
+
+					<div class="modal-section">
+						<div>
+							<p class="modal-section-kicker">Security</p>
+							<h4>Access & account protection</h4>
+						</div>
+
+						<div class="modal-grid">
+							<label class="modal-field">
+								<span>Current password</span>
+								<input type="password" [formControl]="passwordForm.controls.currentPassword" placeholder="Current password" />
+							</label>
+
+							<label class="modal-field">
+								<span>New password</span>
+								<input type="password" [formControl]="passwordForm.controls.newPassword" placeholder="At least 8 characters" />
+							</label>
+
+							<label class="modal-field modal-field-full">
+								<span>Confirm new password</span>
+								<input type="password" [formControl]="passwordForm.controls.confirmPassword" placeholder="Repeat new password" />
+							</label>
+
+							<div class="modal-inline-actions modal-field-full">
+								<button class="chip" type="button" (click)="submitPasswordChange()" [disabled]="isSavingPassword">
+									{{ isSavingPassword ? 'Saving...' : 'Zmień hasło' }}
+								</button>
+								<button class="chip" type="button" (click)="manageSessions()">Zarządzaj sesjami</button>
+							</div>
+
+							<div class="modal-inline-actions modal-field-full">
+								<button class="chip" type="button" (click)="toggleTwoFactor()">
+									{{ isTwoFactorEnabled ? 'Wyłącz 2FA' : 'Włącz 2FA' }}
+								</button>
+								<button class="chip" type="button" (click)="exportUserData()">Eksport danych</button>
+								<button class="chip danger-chip" type="button" (click)="confirmDeleteAccount()">Usuń konto</button>
+							</div>
+						</div>
+					</div>
+
+					<div class="modal-section">
+						<div>
+							<p class="modal-section-kicker">Privacy</p>
+							<h4>Consents & privacy settings</h4>
+						</div>
+
+						<div class="modal-consent-list">
+							<label class="modal-consent-item">
+								<input type="checkbox" [(ngModel)]="allowMarketingEmails" [ngModelOptions]="{ standalone: true }" />
+								<span>Allow email marketing communications</span>
+							</label>
+
+							<label class="modal-consent-item">
+								<input type="checkbox" [(ngModel)]="allowAnalytics" [ngModelOptions]="{ standalone: true }" />
+								<span>Allow app usage analytics</span>
+							</label>
+						</div>
+
+						<div class="modal-inline-actions">
+							<button class="chip" type="button" (click)="savePrivacySettings()">Save privacy settings</button>
+						</div>
+					</div>
+					
 				<div class="modal-actions">
-					<button class="chip" type="button" (click)="closeEditProfileModal()" [disabled]="isSavingProfile">Anuluj</button>
 					<button class="primary-button" type="submit" [disabled]="isSavingProfile">
-						{{ isSavingProfile ? 'Zapisywanie...' : 'Zapisz zmiany' }}
+						{{ isSavingProfile ? 'Saving...' : 'Save changes' }}
 					</button>
+					<button class="chip modal-cancel-button" type="button" (click)="closeEditProfileModal()" [disabled]="isSavingProfile">Cancel</button>
 				</div>
 			</form>
 		</div>

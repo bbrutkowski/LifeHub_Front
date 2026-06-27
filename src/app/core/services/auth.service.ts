@@ -58,13 +58,16 @@ export class AuthService {
     }
   }
 
-  setSession(accessToken: string, refreshToken?: string) {
-    this.setToken(accessToken);
+  setSession(loginResponse: { token?: string; accessToken?: string; refreshToken?: string }) {
+    const accessToken = loginResponse.token || loginResponse.accessToken;
+    const refreshToken = loginResponse.refreshToken;
+
+    this.setToken(accessToken || '');
     if (refreshToken) {
       this.setRefreshToken(refreshToken);
     }
   }
-
+  
   clearToken() {
     this.clearSession();
   }
