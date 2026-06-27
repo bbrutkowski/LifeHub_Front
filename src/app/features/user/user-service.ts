@@ -3,7 +3,9 @@ import { ApiService } from '../../core/services/api.service';
 import { Observable } from 'rxjs';
 
 export interface LoginResponse {
-  token: string;
+  token?: string;
+  accessToken?: string;
+  refreshToken?: string;
   userId: string;
   username: string;
 }
