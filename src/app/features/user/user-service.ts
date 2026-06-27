@@ -8,6 +8,7 @@ export interface LoginResponse {
   refreshToken?: string;
   userId: string;
   username: string;
+  email?: string;
 }
 
 export interface UserProfile {
@@ -28,9 +29,10 @@ export class UserService {
 
   constructor(private _apiService: ApiService) {}
 
-  storeUserData(userId: string, username: string): void {
-    localStorage.setItem('userId', userId);
-    localStorage.setItem('username', username);
+  storeUserData(loginResponse: LoginResponse): void {
+    localStorage.setItem('userId', loginResponse.userId);
+    localStorage.setItem('username', loginResponse.username);
+    localStorage.setItem('email', loginResponse.email || '');
   }
 
   registerUser(name: string, email: string, password: string): Observable<ApiMessageResponse> {
