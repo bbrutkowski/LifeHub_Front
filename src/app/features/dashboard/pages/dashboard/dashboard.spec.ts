@@ -19,4 +19,12 @@ describe('Dashboard', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should render the user profile modal when opened', () => {
+    component.isEditProfileModalOpen = true;
+    fixture.detectChanges();
+
+    const modal = fixture.nativeElement.querySelector('app-user-profile-modal');
+    expect(modal).not.toBeNull();
+  });
 });

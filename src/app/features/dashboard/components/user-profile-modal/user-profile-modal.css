@@ -1,0 +1,319 @@
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: contents;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  display: flex;
+  flex-direction: column;
+  width: min(920px, 92vw);
+  height: min(68vh, 720px);
+  max-height: calc(100vh - 64px);
+  min-height: 0;
+  overflow: hidden;
+  background: var(--surface-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 28px;
+  box-shadow: 0 28px 60px rgba(15, 23, 42, 0.18);
+  color: var(--text-primary);
+}
+
+.modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface-primary);
+}
+
+.modal-form {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.modal-form::-webkit-scrollbar {
+  width: 10px;
+}
+
+.modal-form::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-form::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.5);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.modal-form::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.75);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px 12px;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.modal-close {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 18px 22px 22px;
+}
+
+.modal-section {
+  display: grid;
+  grid-template-columns: minmax(140px, 180px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.modal-section:last-of-type {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.modal-section-kicker {
+  margin: 0 0 4px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.modal-section h4 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.modal-field-full {
+  grid-column: 1 / -1;
+}
+
+.modal-field span {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.modal-field input,
+.modal-field select {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.modal-field input:focus,
+.modal-field select:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.2);
+  border-color: var(--border-focus);
+}
+
+.modal-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.modal-consent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-consent-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  background: var(--surface-secondary);
+}
+
+.modal-consent-item input {
+  accent-color: var(--primary);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.primary-button,
+.chip,
+.icon-button {
+  font: inherit;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast),
+    color var(--transition-fast),
+    filter var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.primary-button {
+  padding: 10px 16px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: white;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 600;
+  box-shadow: 0 14px 24px rgba(37, 99, 235, 0.22);
+  transform: translateY(0);
+}
+
+.primary-button:hover:not(:disabled) {
+  filter: brightness(1.08);
+  box-shadow: 0 20px 34px rgba(37, 99, 235, 0.3); 
+}
+
+.primary-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 10px 18px rgba(37, 99, 235, 0.24);
+}
+
+.primary-button:focus-visible,
+.chip:focus-visible,
+.icon-button:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.35);
+  outline-offset: 2px;
+}
+
+.chip {
+  padding: 9px 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: 999px;
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  transform: translateY(0);
+}
+
+.chip:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--border-secondary);
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
+}
+
+.chip:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+}
+
+.icon-button:hover:not(:disabled) {
+  background: var(--surface-hover);
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+
+.icon-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+}
+
+.danger-chip {
+  color: var(--error);
+  border-color: rgba(220, 38, 38, 0.2);
+}
+
+.danger-chip:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(220, 38, 38, 0.34);
+  box-shadow: 0 8px 16px rgba(220, 38, 38, 0.08);
+}
+
+@media (max-width: 720px) {
+  .modal-backdrop {
+    padding: 14px;
+  }
+
+  .modal-card {
+    width: min(100%, 100vw - 20px);
+  }
+
+  .modal-header,
+  .modal-form {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .modal-section {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-actions > * {
+    width: 100%;
+  }
+}

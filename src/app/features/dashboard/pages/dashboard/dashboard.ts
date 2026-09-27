@@ -2,18 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ThemeToggle } from '../../../../core/components/theme-toggle/theme-toggle';
-import { UserService } from '../../../user/user-service';
+import { UserService } from '../../../../core/services/user-service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { UserProfileModal, UserProfilePreferences } from '../../components/user-profile-modal/user-profile-modal';
 
-type UserPreferences = {
-  avatarUrl: string;
-  timezone: string;
-  city: string;
-  currency: string;
-  dateFormat: string;
-  weekStartsOn: string;
-};
+type UserPreferences = UserProfilePreferences;
 
 type NavItem = {
   label: string;
@@ -52,7 +46,7 @@ type ReminderItem = {
 @Component({
   standalone: true,
   selector: 'app-dashboard',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, ThemeToggle],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ThemeToggle, UserProfileModal],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -72,8 +66,6 @@ export class Dashboard implements OnInit {
   allowAnalytics = true;
   userPreferences: UserPreferences = this.createDefaultPreferences();
 
-  readonly editProfileForm;
-  readonly passwordForm;
   readonly timezoneOptions = [
     { value: 'Europe/Warsaw', label: 'Europe/Warsaw' },
     { value: 'Europe/London', label: 'Europe/London' },
@@ -93,28 +85,10 @@ export class Dashboard implements OnInit {
   ];
 
   constructor(
-    private readonly formBuilder: FormBuilder,
     private readonly userService: UserService,
     private readonly authService: AuthService,
     private readonly notificationService: NotificationService,
-  ) {
-    this.editProfileForm = this.formBuilder.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      avatarUrl: [''],
-      timezone: ['Europe/Warsaw', [Validators.required]],
-      city: ['Warsaw', [Validators.required, Validators.minLength(2)]],
-      currency: ['PLN', [Validators.required]],
-      dateFormat: ['DD.MM.YYYY', [Validators.required]],
-      weekStartsOn: ['monday', [Validators.required]],
-    });
-
-    this.passwordForm = this.formBuilder.group({
-      currentPassword: [''],
-      newPassword: ['', [Validators.minLength(8)]],
-      confirmPassword: [''],
-    });
-  }
+  ) {}
 
   ngOnInit(): void {
     this.loadUserSummary();
@@ -152,39 +126,6 @@ export class Dashboard implements OnInit {
     this.openEditProfileModal();
   }
 
-  submitPasswordChange(): void {
-    if (this.isSavingPassword) {
-      return;
-    }
-
-    const { currentPassword, newPassword, confirmPassword } = this.passwordForm.getRawValue();
-    const current = currentPassword?.trim() ?? '';
-    const next = newPassword?.trim() ?? '';
-    const confirm = confirmPassword?.trim() ?? '';
-
-    if (!current || !next || !confirm) {
-      this.notificationService.error('Fill all password fields before saving.');
-      return;
-    }
-
-    if (next.length < 8) {
-      this.notificationService.error('New password must be at least 8 characters long.');
-      return;
-    }
-
-    if (next !== confirm) {
-      this.notificationService.error('New password and confirmation do not match.');
-      return;
-    }
-
-    this.isSavingPassword = true;
-    setTimeout(() => {
-      this.isSavingPassword = false;
-      this.passwordForm.reset();
-      this.notificationService.info('Password change endpoint is pending backend implementation.');
-    }, 300);
-  }
-
   manageSessions(): void {
     this.notificationService.info('Session management will be available after backend endpoints are connected.');
   }
@@ -203,19 +144,49 @@ export class Dashboard implements OnInit {
     this.notificationService.error('Account deletion is a protected action. Connect confirmation flow with backend endpoint.');
   }
 
-  savePrivacySettings(): void {
+  savePrivacySettings(payload?: { allowMarketingEmails: boolean; allowAnalytics: boolean }): void {
+    const nextSettings = payload ?? {
+      allowMarketingEmails: this.allowMarketingEmails,
+      allowAnalytics: this.allowAnalytics,
+    };
+
+    this.allowMarketingEmails = nextSettings.allowMarketingEmails;
+    this.allowAnalytics = nextSettings.allowAnalytics;
+
     try {
       localStorage.setItem(
         'user_privacy_settings',
-        JSON.stringify({
-          allowMarketingEmails: this.allowMarketingEmails,
-          allowAnalytics: this.allowAnalytics,
-        }),
+        JSON.stringify(nextSettings),
       );
       this.notificationService.success('Privacy settings saved locally.');
     } catch {
       this.notificationService.error('Saving privacy settings failed.');
     }
+  }
+
+  submitPasswordChange(payload: { currentPassword: string; newPassword: string; confirmPassword: string }): void {
+    const { currentPassword, newPassword, confirmPassword } = payload;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      this.notificationService.error('Fill all password fields before saving.');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      this.notificationService.error('New password must be at least 8 characters long.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      this.notificationService.error('New password and confirmation do not match.');
+      return;
+    }
+
+    this.isSavingPassword = true;
+    setTimeout(() => {
+      this.isSavingPassword = false;
+      this.notificationService.info('Password change endpoint is pending backend implementation.');
+    }, 300);
   }
 
   logout(): void {
@@ -225,16 +196,6 @@ export class Dashboard implements OnInit {
 
   openEditProfileModal(): void {
     this.isAccountMenuOpen = false;
-    this.editProfileForm.reset({
-      name: this.userName,
-      email: this.userEmail,
-      avatarUrl: this.userAvatarUrl,
-      timezone: this.userPreferences.timezone,
-      city: this.userPreferences.city,
-      currency: this.userPreferences.currency,
-      dateFormat: this.userPreferences.dateFormat,
-      weekStartsOn: this.userPreferences.weekStartsOn,
-    });
     this.isEditProfileModalOpen = true;
   }
 
@@ -245,9 +206,8 @@ export class Dashboard implements OnInit {
     this.isEditProfileModalOpen = false;
   }
 
-  submitEditProfile(): void {
-    if (this.editProfileForm.invalid || this.isSavingProfile) {
-      this.editProfileForm.markAllAsTouched();
+  submitEditProfile(formValue: any): void {
+    if (this.isSavingProfile) {
       return;
     }
 
@@ -256,7 +216,6 @@ export class Dashboard implements OnInit {
       return;
     }
 
-    const formValue = this.editProfileForm.getRawValue();
     const name = formValue.name?.trim() ?? '';
     const email = formValue.email?.trim() ?? '';
     const nextPreferences: UserPreferences = {

@@ -6,14 +6,14 @@ import {
   HttpRequest,
   HttpErrorResponse,
 } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError } from 'rxjs';
-import { catchError, filter, finalize, switchMap, take } from 'rxjs/operators';
+import { Observable, ReplaySubject, throwError } from 'rxjs';
+import { catchError, finalize, switchMap, take, tap } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   private isRefreshing = false;
-  private refreshTokenSubject = new BehaviorSubject<string | null>(null);
+  private refreshTokenSubject = new ReplaySubject<string>(1);
   private readonly skipAuthHeader = 'X-Skip-Auth';
 
   constructor(private auth: AuthService) {}
@@ -43,24 +43,36 @@ export class AuthInterceptor implements HttpInterceptor {
 
     if (this.isRefreshing) {
       return this.refreshTokenSubject.pipe(
-        filter((token): token is string => !!token),
         take(1),
         switchMap((newToken) => next.handle(this.addAuthorizationHeader(req, newToken))),
       );
     }
 
     this.isRefreshing = true;
-    this.refreshTokenSubject.next(null);
+    this.refreshTokenSubject = new ReplaySubject<string>(1);
 
     return this.auth.refreshAccessToken().pipe(
-      switchMap((newToken) => {
+      tap((newToken) => {
         this.refreshTokenSubject.next(newToken);
-        return next.handle(this.addAuthorizationHeader(req, newToken));
+        this.refreshTokenSubject.complete();
       }),
       catchError((refreshErr) => {
-        this.auth.logout();
+        this.refreshTokenSubject.error(refreshErr);
+        if (!(refreshErr instanceof HttpErrorResponse) || refreshErr.status === 401) {
+          this.auth.logout();
+        }
         return throwError(() => refreshErr);
       }),
+      switchMap((newToken) =>
+        next.handle(this.addAuthorizationHeader(req, newToken)).pipe(
+          catchError((retryErr: HttpErrorResponse) => {
+            if (retryErr.status === 401) {
+              this.auth.logout();
+            }
+            return throwError(() => retryErr);
+          }),
+        ),
+      ),
       finalize(() => {
         this.isRefreshing = false;
       }),

@@ -1,0 +1,149 @@
+<div
+  *ngIf="isOpen"
+  class="modal-backdrop"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Edit Profile"
+  (click)="closeModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Account Settings</h3>
+      <button class="icon-button modal-close modal-close-button" type="button" (click)="closeModal()" aria-label="Close">✕</button>
+    </div>
+
+    <form class="modal-form" [formGroup]="editProfileForm" (ngSubmit)="submitProfileForm()">
+      <div class="modal-section">
+        <div>
+          <p class="modal-section-kicker">Profile</p>
+          <h4>Basic details</h4>
+        </div>
+        <div class="modal-grid">
+          <label class="modal-field modal-field-full">
+            <span>Full Name</span>
+            <input type="text" formControlName="name" placeholder="Enter your full name" />
+          </label>
+
+          <label class="modal-field modal-field-full">
+            <span>Email</span>
+            <input type="email" formControlName="email" placeholder="Enter your email" />
+          </label>
+
+          <label class="modal-field modal-field-full">
+            <span>Avatar URL</span>
+            <input type="url" formControlName="avatarUrl" placeholder="https://example.com/avatar.jpg" />
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div>
+          <p class="modal-section-kicker">Preferences</p>
+          <h4>Personal setup</h4>
+        </div>
+        <div class="modal-grid">
+          <label class="modal-field">
+            <span>Timezone</span>
+            <select formControlName="timezone">
+              <option *ngFor="let option of timezoneOptions" [value]="option.value">{{ option.label }}</option>
+            </select>
+          </label>
+
+          <label class="modal-field">
+            <span>City</span>
+            <input type="text" formControlName="city" placeholder="Enter your city" />
+          </label>
+
+          <label class="modal-field">
+            <span>Currency</span>
+            <select formControlName="currency">
+              <option *ngFor="let currency of currencyOptions" [value]="currency">{{ currency }}</option>
+            </select>
+          </label>
+
+          <label class="modal-field">
+            <span>Date format</span>
+            <select formControlName="dateFormat">
+              <option *ngFor="let option of dateFormatOptions" [value]="option.value">{{ option.label }}</option>
+            </select>
+          </label>
+
+          <label class="modal-field modal-field-full">
+            <span>Week starts on</span>
+            <select formControlName="weekStartsOn">
+              <option *ngFor="let option of weekStartOptions" [value]="option.value">{{ option.label }}</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div>
+          <p class="modal-section-kicker">Security</p>
+          <h4>Access & account protection</h4>
+        </div>
+
+        <div class="modal-grid" [formGroup]="passwordForm">
+          <label class="modal-field">
+            <span>Current password</span>
+            <input type="password" formControlName="currentPassword" placeholder="Current password" />
+          </label>
+
+          <label class="modal-field">
+            <span>New password</span>
+            <input type="password" formControlName="newPassword" placeholder="At least 8 characters" />
+          </label>
+
+          <label class="modal-field modal-field-full">
+            <span>Confirm new password</span>
+            <input type="password" formControlName="confirmPassword" placeholder="Repeat new password" />
+          </label>
+
+          <div class="modal-inline-actions modal-field-full">
+            <button class="chip" type="button" (click)="submitPasswordChange()" [disabled]="isSavingPassword">
+              {{ isSavingPassword ? 'Saving...' : 'Change password' }}
+            </button>
+            <button class="chip" type="button" (click)="manageSessions.emit()">Manage sessions</button>
+          </div>
+
+          <div class="modal-inline-actions modal-field-full">
+            <button class="chip" type="button" (click)="toggleTwoFactor.emit()">
+              {{ isTwoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA' }}
+            </button>
+            <button class="chip" type="button" (click)="exportUserData.emit()">Export data</button>
+            <button class="chip danger-chip" type="button" (click)="deleteAccount.emit()">Delete account</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div>
+          <p class="modal-section-kicker">Privacy</p>
+          <h4>Consents & privacy settings</h4>
+        </div>
+
+        <div class="modal-consent-list">
+          <label class="modal-consent-item">
+            <input type="checkbox" [(ngModel)]="allowMarketingEmails" [ngModelOptions]="{ standalone: true }" />
+            <span>Allow email marketing communications</span>
+          </label>
+
+          <label class="modal-consent-item">
+            <input type="checkbox" [(ngModel)]="allowAnalytics" [ngModelOptions]="{ standalone: true }" />
+            <span>Allow app usage analytics</span>
+          </label>
+        </div>
+
+        <div class="modal-inline-actions">
+          <button class="chip" type="button" (click)="savePrivacySettings()">Save privacy settings</button>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="primary-button" type="submit" [disabled]="isSavingProfile">
+          {{ isSavingProfile ? 'Saving...' : 'Save changes' }}
+        </button>
+        <button class="chip modal-cancel-button" type="button" (click)="closeModal()" [disabled]="isSavingProfile">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
