@@ -211,13 +211,14 @@
 	[weekStartOptions]="weekStartOptions"
 	[isSavingProfile]="isSavingProfile"
 	[isSavingPassword]="isSavingPassword"
-	[isTwoFactorEnabled]="isTwoFactorEnabled"
+	[sessions]="sessions"
+	[isLoadingSessions]="isLoadingSessions"
 	(close)="closeEditProfileModal()"
 	(saveProfile)="submitEditProfile($event)"
 	(savePassword)="submitPasswordChange($event)"
-	(savePrivacy)="savePrivacySettings()"
 	(manageSessions)="manageSessions()"
-	(toggleTwoFactor)="toggleTwoFactor()"
 	(exportUserData)="exportUserData()"
-	(deleteAccount)="confirmDeleteAccount()">
+	(deleteAccount)="confirmDeleteAccount($event)"
+	(revokeSession)="revokeSession($event)"
+	(revokeOtherSessions)="revokeOtherSessions()">
 </app-user-profile-modal>

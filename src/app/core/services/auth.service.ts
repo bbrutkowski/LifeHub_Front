@@ -78,6 +78,8 @@ export class AuthService {
       localStorage.removeItem(this.refreshTokenKey);
       localStorage.removeItem('userId');
       localStorage.removeItem('username');
+      localStorage.removeItem('email');
+      localStorage.removeItem('user_preferences');
     } catch {
       // Ignore storage failures and keep app running.
     }

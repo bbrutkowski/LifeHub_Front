@@ -15,6 +15,21 @@ export interface UserProfile {
   id: string;
   name: string;
   email: string;
+  avatarUrl: string | null;
+  timezone: string;
+  city: string;
+  currency: string;
+  dateFormat: string;
+  weekStartsOn: string;
+  createdAt: string;
+}
+
+export interface UserSession {
+  id: string;
+  createdAt: string;
+  expiresAt: string;
+  isActive: boolean;
+  isCurrent: boolean;
 }
 
 export interface ApiMessageResponse {
@@ -51,7 +66,45 @@ export class UserService {
     return this._apiService.get<UserProfile>(`${this._basePath}/${id}`);
   }
 
-  updateUserProfile(id: string, name: string, email: string): Observable<UserProfile> {
-    return this._apiService.put<UserProfile>(`${this._basePath}/${id}`, { name, email });
+  updateUserProfile(id: string, profile: Omit<UserProfile, 'id' | 'avatarUrl' | 'createdAt'>): Observable<UserProfile> {
+    return this._apiService.put<UserProfile>(`${this._basePath}/${id}`, profile);
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<void> {
+    return this._apiService.post<void>(`${this._basePath}/changePassword`, { currentPassword, newPassword });
+  }
+
+  uploadAvatar(file: File): Observable<UserProfile> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this._apiService.post<UserProfile>(`${this._basePath}/avatar`, formData);
+  }
+
+  deleteAvatar(): Observable<void> {
+    return this._apiService.delete<void>(`${this._basePath}/avatar`);
+  }
+
+  getSessions(): Observable<UserSession[]> {
+    return this._apiService.get<UserSession[]>(`${this._basePath}/sessions`);
+  }
+
+  revokeSession(id: string): Observable<void> {
+    return this._apiService.delete<void>(`${this._basePath}/sessions/${id}`);
+  }
+
+  revokeOtherSessions(): Observable<void> {
+    return this._apiService.delete<void>(`${this._basePath}/sessions`);
+  }
+
+  exportData(): Observable<Blob> {
+    return this._apiService.getBlob(`${this._basePath}/export`);
+  }
+
+  logoutCurrentSession(): Observable<void> {
+    return this._apiService.post<void>(`${this._basePath}/logout`, {});
+  }
+
+  deactivateAccount(currentPassword: string): Observable<void> {
+    return this._apiService.post<void>(`${this._basePath}/deactivate`, { currentPassword });
   }
 }

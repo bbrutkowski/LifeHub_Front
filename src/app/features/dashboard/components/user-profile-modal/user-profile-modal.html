@@ -28,10 +28,39 @@
             <input type="email" formControlName="email" placeholder="Enter your email" />
           </label>
 
-          <label class="modal-field modal-field-full">
-            <span>Avatar URL</span>
-            <input type="url" formControlName="avatarUrl" placeholder="https://example.com/avatar.jpg" />
-          </label>
+          <div class="modal-field modal-field-full">
+            <span>Avatar</span>
+            <div class="avatar-upload">
+              <label class="avatar-picker">
+                <input
+                  class="avatar-file-input"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  (change)="onAvatarSelected($event)"
+                  aria-label="Choose avatar image"
+                  aria-describedby="avatar-upload-help" />
+                <span class="avatar-preview">
+                  <img *ngIf="avatarPreviewUrl || userAvatarUrl" [src]="avatarPreviewUrl || userAvatarUrl" [alt]="userName" />
+                  <svg *ngIf="!avatarPreviewUrl && !userAvatarUrl" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M20 21a8 8 0 0 0-16 0" />
+                    <circle cx="12" cy="8" r="4" />
+                  </svg>
+                </span>
+                <span class="avatar-picker-copy">
+                  <strong>{{ avatarFile ? 'Change your photo' : 'Add a profile photo' }}</strong>
+                  <small id="avatar-upload-help">JPG, PNG or WebP · Up to 5 MB</small>
+                  <small *ngIf="avatarFile" class="avatar-file-name">{{ avatarFile.name }}</small>
+                </span>
+                <span class="avatar-browse-button">{{ avatarFile ? 'Choose another' : 'Choose photo' }}</span>
+              </label>
+              <button
+                *ngIf="userAvatarUrl || avatarFile"
+                class="chip avatar-remove-button"
+                type="button"
+                (click)="clearSelectedAvatar()">Remove avatar</button>
+            </div>
+            <small *ngIf="avatarError" class="form-error">{{ avatarError }}</small>
+          </div>
         </div>
       </div>
 
@@ -102,39 +131,35 @@
             <button class="chip" type="button" (click)="submitPasswordChange()" [disabled]="isSavingPassword">
               {{ isSavingPassword ? 'Saving...' : 'Change password' }}
             </button>
-            <button class="chip" type="button" (click)="manageSessions.emit()">Manage sessions</button>
+            <button class="chip" type="button" (click)="toggleSessionList()">Manage sessions</button>
+          </div>
+          <small *ngIf="passwordError" class="form-error modal-field-full">{{ passwordError }}</small>
+
+          <div *ngIf="showSessions" class="session-list modal-field-full">
+            <p *ngIf="isLoadingSessions">Loading sessions...</p>
+            <p *ngIf="!isLoadingSessions && sessions.length === 0">No sessions found.</p>
+            <div *ngFor="let session of sessions" class="session-row">
+              <span>{{ session.isCurrent ? 'This session' : 'Other session' }} · signed in {{ session.createdAt | date:'medium' }}</span>
+              <button *ngIf="session.isActive && !session.isCurrent" class="chip danger-chip" type="button" (click)="revokeSession.emit(session.id)">Revoke</button>
+            </div>
+            <button *ngIf="sessions.length > 1" class="chip danger-chip" type="button" (click)="revokeOtherSessions.emit()">Revoke other sessions</button>
           </div>
 
           <div class="modal-inline-actions modal-field-full">
-            <button class="chip" type="button" (click)="toggleTwoFactor.emit()">
-              {{ isTwoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA' }}
-            </button>
             <button class="chip" type="button" (click)="exportUserData.emit()">Export data</button>
-            <button class="chip danger-chip" type="button" (click)="deleteAccount.emit()">Delete account</button>
+            <button *ngIf="!showDeleteConfirmation" class="chip danger-chip" type="button" (click)="showDeleteConfirmation = true">Deactivate account</button>
           </div>
-        </div>
-      </div>
-
-      <div class="modal-section">
-        <div>
-          <p class="modal-section-kicker">Privacy</p>
-          <h4>Consents & privacy settings</h4>
-        </div>
-
-        <div class="modal-consent-list">
-          <label class="modal-consent-item">
-            <input type="checkbox" [(ngModel)]="allowMarketingEmails" [ngModelOptions]="{ standalone: true }" />
-            <span>Allow email marketing communications</span>
-          </label>
-
-          <label class="modal-consent-item">
-            <input type="checkbox" [(ngModel)]="allowAnalytics" [ngModelOptions]="{ standalone: true }" />
-            <span>Allow app usage analytics</span>
-          </label>
-        </div>
-
-        <div class="modal-inline-actions">
-          <button class="chip" type="button" (click)="savePrivacySettings()">Save privacy settings</button>
+          <div *ngIf="showDeleteConfirmation" class="modal-grid modal-field-full">
+            <p class="form-error modal-field-full">This will deactivate your account and sign you out. Enter your password to confirm.</p>
+            <label class="modal-field modal-field-full">
+              <span>Current password</span>
+              <input type="password" [(ngModel)]="deletePassword" [ngModelOptions]="{standalone: true}" autocomplete="current-password" />
+            </label>
+            <div class="modal-inline-actions modal-field-full">
+              <button class="chip danger-chip" type="button" (click)="confirmAccountDeactivation()">Confirm deactivation</button>
+              <button class="chip" type="button" (click)="showDeleteConfirmation = false; deletePassword = ''">Cancel</button>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -121,6 +121,7 @@ export class Login {
           this._router.navigate(['/dashboard']);
         },
         error: err => {
+          console.error('Login error:', err);  
           this._notification.error(
             err?.error?.message ??
             err?.message ??

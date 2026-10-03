@@ -18,6 +18,10 @@ export class ApiService {
     return this.http.get<T>(this.buildUrl(path), { params, headers });
   }
 
+  getBlob(path: string): Observable<Blob> {
+    return this.http.get(this.buildUrl(path), { responseType: 'blob' });
+  }
+
   post<T>(path: string, body: unknown, params?: HttpParams, headers?: HttpHeaders): Observable<T> {
     return this.http.post<T>(this.buildUrl(path), body, { params, headers });
   }
