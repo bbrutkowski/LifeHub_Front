@@ -2,10 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ThemeToggle } from '../../../../core/components/theme-toggle/theme-toggle';
-import { UserService } from '../../../../core/services/user-service';
+import { UserProfile, UserService, UserSession } from '../../../../core/services/user-service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { UserProfileModal, UserProfilePreferences } from '../../components/user-profile-modal/user-profile-modal';
+import { environment } from '../../../../../environments/environment';
+import { Observable, of, switchMap } from 'rxjs';
 
 type UserPreferences = UserProfilePreferences;
 
@@ -61,7 +63,8 @@ export class Dashboard implements OnInit {
   isSavingProfile = false;
   isAccountMenuOpen = false;
   isSavingPassword = false;
-  isTwoFactorEnabled = false;
+  isLoadingSessions = false;
+  sessions: UserSession[] = [];
   allowMarketingEmails = false;
   allowAnalytics = true;
   userPreferences: UserPreferences = this.createDefaultPreferences();
@@ -127,41 +130,67 @@ export class Dashboard implements OnInit {
   }
 
   manageSessions(): void {
-    this.notificationService.info('Session management will be available after backend endpoints are connected.');
-  }
-
-  toggleTwoFactor(): void {
-    this.isTwoFactorEnabled = !this.isTwoFactorEnabled;
-    const state = this.isTwoFactorEnabled ? 'enabled' : 'disabled';
-    this.notificationService.info(`2FA ${state}. Persist this setting when backend support is ready.`);
+    this.isLoadingSessions = true;
+    this.userService.getSessions().subscribe({
+      next: (sessions) => {
+        this.sessions = sessions;
+        this.isLoadingSessions = false;
+      },
+      error: () => {
+        this.isLoadingSessions = false;
+        this.notificationService.error('Could not load active sessions.');
+      },
+    });
   }
 
   exportUserData(): void {
-    this.notificationService.info('Data export request queued. Connect with backend export endpoint to generate file.');
+    this.userService.exportData().subscribe({
+      next: (file) => {
+        const url = URL.createObjectURL(file);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'lifehub-account-export.json';
+        link.click();
+        URL.revokeObjectURL(url);
+        this.notificationService.success('Your data export has been downloaded.');
+      },
+      error: () => this.notificationService.error('Could not export your account data.'),
+    });
   }
 
-  confirmDeleteAccount(): void {
-    this.notificationService.error('Account deletion is a protected action. Connect confirmation flow with backend endpoint.');
+  confirmDeleteAccount(currentPassword: string): void {
+    this.userService.deactivateAccount(currentPassword).subscribe({
+      next: () => {
+        this.notificationService.success('Your account has been deactivated.');
+        this.authService.logout('/login');
+      },
+      error: () => this.notificationService.error('Account deactivation failed. Check your password and try again.'),
+    });
   }
 
-  savePrivacySettings(payload?: { allowMarketingEmails: boolean; allowAnalytics: boolean }): void {
-    const nextSettings = payload ?? {
-      allowMarketingEmails: this.allowMarketingEmails,
-      allowAnalytics: this.allowAnalytics,
-    };
+  revokeSession(sessionId: string): void {
+    const session = this.sessions.find((item) => item.id === sessionId);
+    this.userService.revokeSession(sessionId).subscribe({
+      next: () => {
+        if (session?.isCurrent) {
+          this.authService.logout('/login');
+          return;
+        }
+        this.notificationService.success('Session revoked.');
+        this.manageSessions();
+      },
+      error: () => this.notificationService.error('Could not revoke this session.'),
+    });
+  }
 
-    this.allowMarketingEmails = nextSettings.allowMarketingEmails;
-    this.allowAnalytics = nextSettings.allowAnalytics;
-
-    try {
-      localStorage.setItem(
-        'user_privacy_settings',
-        JSON.stringify(nextSettings),
-      );
-      this.notificationService.success('Privacy settings saved locally.');
-    } catch {
-      this.notificationService.error('Saving privacy settings failed.');
-    }
+  revokeOtherSessions(): void {
+    this.userService.revokeOtherSessions().subscribe({
+      next: () => {
+        this.notificationService.success('Other sessions have been revoked.');
+        this.manageSessions();
+      },
+      error: () => this.notificationService.error('Could not revoke other sessions.'),
+    });
   }
 
   submitPasswordChange(payload: { currentPassword: string; newPassword: string; confirmPassword: string }): void {
@@ -183,15 +212,25 @@ export class Dashboard implements OnInit {
     }
 
     this.isSavingPassword = true;
-    setTimeout(() => {
-      this.isSavingPassword = false;
-      this.notificationService.info('Password change endpoint is pending backend implementation.');
-    }, 300);
+    this.userService.changePassword(currentPassword, newPassword).subscribe({
+      next: () => {
+        this.isSavingPassword = false;
+        this.notificationService.success('Password changed. Please sign in again.');
+        this.authService.logout('/login');
+      },
+      error: () => {
+        this.isSavingPassword = false;
+        this.notificationService.error('Password change failed. Check your current password and try again.');
+      },
+    });
   }
 
   logout(): void {
     this.isAccountMenuOpen = false;
-    this.authService.logout('/login');
+    this.userService.logoutCurrentSession().subscribe({
+      next: () => this.authService.logout('/login'),
+      error: () => this.authService.logout('/login'),
+    });
   }
 
   openEditProfileModal(): void {
@@ -206,7 +245,17 @@ export class Dashboard implements OnInit {
     this.isEditProfileModalOpen = false;
   }
 
-  submitEditProfile(formValue: any): void {
+  submitEditProfile(formValue: {
+    name: string;
+    email: string;
+    timezone: string;
+    city: string;
+    currency: string;
+    dateFormat: string;
+    weekStartsOn: string;
+    avatarFile: File | null;
+    removeAvatar: boolean;
+  }): void {
     if (this.isSavingProfile) {
       return;
     }
@@ -218,8 +267,9 @@ export class Dashboard implements OnInit {
 
     const name = formValue.name?.trim() ?? '';
     const email = formValue.email?.trim() ?? '';
-    const nextPreferences: UserPreferences = {
-      avatarUrl: formValue.avatarUrl?.trim() ?? '',
+    const profilePayload = {
+      name,
+      email,
       timezone: formValue.timezone ?? this.userPreferences.timezone,
       city: formValue.city?.trim() ?? '',
       currency: formValue.currency ?? this.userPreferences.currency,
@@ -228,10 +278,20 @@ export class Dashboard implements OnInit {
     };
 
     this.isSavingProfile = true;
-    this.userService.updateUserProfile(userId, name, email).subscribe({
+    let avatarRequest: Observable<unknown>;
+    if (formValue.avatarFile) {
+      avatarRequest = this.userService.uploadAvatar(formValue.avatarFile);
+    } else if (formValue.removeAvatar) {
+      avatarRequest = this.userService.deleteAvatar();
+    } else {
+      avatarRequest = of(null);
+    }
+
+    avatarRequest.pipe(
+      switchMap(() => this.userService.updateUserProfile(userId, profilePayload)),
+    ).subscribe({
       next: (profile) => {
-        this.applyUserData(profile.name || name, profile.email || email);
-        this.applyUserPreferences(nextPreferences);
+        this.applyProfile(profile);
         localStorage.setItem('username', this.userName);
         localStorage.setItem('email', this.userEmail);
         this.isEditProfileModalOpen = false;
@@ -261,10 +321,9 @@ export class Dashboard implements OnInit {
 
     this.userService.getUser(storedUserId).subscribe({
       next: (profile) => {
-        const resolvedName = profile.name || storedUsername || this.userName;
-        const resolvedEmail = profile.email || storedUserEmail || this.userEmail;
-        this.applyUserData(resolvedName, resolvedEmail);
-        localStorage.setItem('username', resolvedName);
+        this.applyProfile(profile);
+        localStorage.setItem('username', this.userName);
+        localStorage.setItem('email', this.userEmail);
       },
       error: () => {
         if (!storedUsername) {
@@ -272,6 +331,23 @@ export class Dashboard implements OnInit {
         }
       },
     });
+  }
+
+  private applyProfile(profile: UserProfile): void {
+    this.applyUserData(profile.name, profile.email);
+    this.applyUserPreferences({
+      avatarUrl: this.resolveAvatarUrl(profile.avatarUrl),
+      timezone: profile.timezone,
+      city: profile.city,
+      currency: profile.currency,
+      dateFormat: profile.dateFormat,
+      weekStartsOn: profile.weekStartsOn,
+    });
+  }
+
+  private resolveAvatarUrl(url: string | null): string {
+    if (!url) return '';
+    return url.startsWith('/') ? `${environment.apiBaseUrl}${url}` : url;
   }
 
   private applyUserData(name: string, email: string): void {
