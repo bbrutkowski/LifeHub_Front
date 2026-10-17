@@ -1,0 +1,228 @@
+<main class="finance-page">
+  <header class="page-header">
+    <div class="heading">
+      <p class="eyebrow">Your finances</p>
+      <h1>Finance</h1>
+      <p class="page-description">Track your income, expenses, and monthly budgets.</p>
+    </div>
+    <label class="month-picker">
+      <span>Month</span>
+      <input #monthInput type="month" [value]="month" (change)="onMonthChange(monthInput.value)" />
+    </label>
+  </header>
+
+  <div *ngIf="errorMessage" class="api-error" role="alert">
+    <span>{{ errorMessage }}</span>
+    <button type="button" class="text-button" (click)="loadMonth()">Try again</button>
+  </div>
+
+  <div *ngIf="loading && !data" class="loading-state" role="status" aria-live="polite">
+    <span class="loading-indicator" aria-hidden="true"></span>
+    <span>Loading finance data…</span>
+  </div>
+
+  <section *ngIf="data as finance" class="finance-content" [attr.aria-busy]="loading">
+    <div *ngIf="loading" class="refresh-status" role="status">Refreshing data…</div>
+
+    <section class="summary-grid" aria-label="Monthly summary">
+      <article class="summary-card income-card">
+        <div class="summary-icon" aria-hidden="true">↗</div>
+        <div>
+          <p>Income</p>
+          <strong>{{ formatMoney(finance.incomeTotal) }}</strong>
+        </div>
+      </article>
+      <article class="summary-card expense-card">
+        <div class="summary-icon" aria-hidden="true">↙</div>
+        <div>
+          <p>Expenses</p>
+          <strong>{{ formatMoney(finance.expenseTotal) }}</strong>
+        </div>
+      </article>
+      <article class="summary-card balance-card">
+        <div class="summary-icon" aria-hidden="true">＝</div>
+        <div>
+          <p>Balance</p>
+          <strong>{{ formatMoney(finance.incomeTotal - finance.expenseTotal) }}</strong>
+        </div>
+      </article>
+    </section>
+
+    <div class="content-grid">
+      <section class="panel transactions-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">History</p>
+            <h2>Transactions</h2>
+          </div>
+          <span class="item-count">{{ transactions.length }}</span>
+        </div>
+
+        <div *ngIf="transactions.length === 0" class="empty-state">
+          <span class="empty-icon" aria-hidden="true">↔</span>
+          <h3>No transactions yet</h3>
+          <p>Add your first transaction to see it here.</p>
+        </div>
+
+        <ul *ngIf="transactions.length > 0" class="transaction-list">
+          <li *ngFor="let transaction of transactions; trackBy: trackTransaction" class="transaction">
+            <div class="transaction-icon" [class.income]="transaction.type === 'income'" aria-hidden="true">
+              {{ transaction.type === 'income' ? '↗' : '↙' }}
+            </div>
+            <div class="transaction-details">
+              <strong>{{ transaction.note || categoryLabel(transaction.category) }}</strong>
+              <span>{{ categoryLabel(transaction.category) }} · {{ formatDate(transaction.date) }}</span>
+            </div>
+            <strong class="transaction-amount" [class.income]="transaction.type === 'income'">
+              {{ transaction.type === 'income' ? '+' : '−' }}{{ formatMoney(transaction.amount) }}
+            </strong>
+            <button
+              type="button"
+              class="icon-button delete-button"
+              [disabled]="deletingTransactionId !== null"
+              [attr.aria-label]="'Delete transaction: ' + categoryLabel(transaction.category)"
+              title="Delete transaction"
+              (click)="deleteTransaction(transaction)">
+              ×
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <div class="finance-side-panels">
+        <section class="panel add-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">New entry</p>
+              <h2>Add transaction</h2>
+            </div>
+          </div>
+
+          <form [formGroup]="transactionForm" (ngSubmit)="saveTransaction()" novalidate>
+            <label class="field">
+              <span>Type</span>
+              <select formControlName="type" (change)="onTransactionTypeChange()">
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Category</span>
+              <select formControlName="category">
+                <option value="" disabled>Select a category</option>
+                <option *ngFor="let category of transactionCategories" [value]="category.id">
+                  {{ categoryName(category) }}
+                </option>
+              </select>
+              <small
+                *ngIf="transactionForm.controls.category.touched && transactionForm.controls.category.invalid"
+                class="field-error">
+                Select a category.
+              </small>
+            </label>
+
+            <label class="field">
+              <span>Amount</span>
+              <div class="amount-input">
+                <input formControlName="amount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0,00" />
+                <span>{{ finance.currency }}</span>
+              </div>
+              <small
+                *ngIf="transactionForm.controls.amount.touched && transactionForm.controls.amount.invalid"
+                class="field-error">
+                Enter a positive amount with no more than two decimal places.
+              </small>
+            </label>
+
+            <label class="field">
+              <span>Date</span>
+              <input formControlName="date" type="date" />
+              <small *ngIf="transactionForm.controls.date.touched && transactionForm.controls.date.invalid" class="field-error">
+                Select a date.
+              </small>
+            </label>
+
+            <label class="field">
+              <span>Note <span class="optional">(optional)</span></span>
+              <input formControlName="note" type="text" maxlength="250" placeholder="e.g. Groceries" />
+              <small *ngIf="transactionForm.controls.note.touched && transactionForm.controls.note.invalid" class="field-error">
+                Note must be 250 characters or fewer.
+              </small>
+            </label>
+
+            <button class="primary-button" type="submit" [disabled]="savingTransaction || transactionCategories.length === 0">
+              {{ savingTransaction ? 'Saving…' : 'Add transaction' }}
+            </button>
+          </form>
+        </section>
+
+        <section class="panel budgets-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Planning</p>
+              <h2>Budgets</h2>
+            </div>
+            <span class="month-caption">{{ month }}</span>
+          </div>
+
+          <div *ngIf="budgets.length === 0" class="budget-empty">
+            No budgets set for this month yet. Create your first one below.
+          </div>
+          <ul *ngIf="budgets.length > 0" class="budget-list">
+            <li *ngFor="let budget of budgets; trackBy: trackBudget" class="budget-item">
+              <div class="budget-meta">
+                <strong>{{ categoryLabel(budget.category) }}</strong>
+                <span>{{ formatMoney(budget.spentAmount) }} z {{ formatMoney(budget.limitAmount) }}</span>
+              </div>
+              <div
+                class="budget-track"
+                role="progressbar"
+                [attr.aria-label]="'Budget usage: ' + categoryLabel(budget.category)"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                [attr.aria-valuenow]="budgetProgress(budget)">
+                <span [style.width.%]="budgetProgress(budget)" [class.over-limit]="budget.spentAmount > budget.limitAmount"></span>
+              </div>
+              <button type="button" class="text-button budget-edit" (click)="selectBudget(budget)">Edit budget</button>
+            </li>
+          </ul>
+
+          <form class="budget-form" [formGroup]="budgetForm" (ngSubmit)="saveBudget()" novalidate>
+            <label class="field">
+              <span>Expense category</span>
+              <select formControlName="category">
+                <option value="" disabled>Select a category</option>
+                <option *ngFor="let category of expenseCategories" [value]="category.id">{{ categoryName(category) }}</option>
+              </select>
+              <small *ngIf="budgetForm.controls.category.touched && budgetForm.controls.category.invalid" class="field-error">
+                Select a category.
+              </small>
+            </label>
+            <label class="field">
+              <span>Monthly budget</span>
+              <div class="amount-input">
+                <input
+                  formControlName="limitAmount"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  inputmode="decimal"
+                  placeholder="0,00" />
+                <span>{{ finance.currency }}</span>
+              </div>
+              <small
+                *ngIf="budgetForm.controls.limitAmount.touched && budgetForm.controls.limitAmount.invalid"
+                class="field-error">
+                Enter a positive budget with no more than two decimal places.
+              </small>
+            </label>
+            <button class="secondary-button" type="submit" [disabled]="savingBudget || expenseCategories.length === 0">
+              {{ savingBudget ? 'Saving…' : 'Save budget' }}
+            </button>
+          </form>
+        </section>
+      </div>
+    </div>
+  </section>
+</main>

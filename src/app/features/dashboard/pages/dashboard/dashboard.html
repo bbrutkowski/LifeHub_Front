@@ -20,11 +20,12 @@
 		<nav class="nav-list">
 			<a
 				*ngFor="let item of navItems"
-				href="#"
-				class="nav-item"
-				[class.active]="item.active">
-				<span class="nav-icon">{{ item.icon }}</span>
-				<span>{{ item.label }}</span>
+				[routerLink]="item.route"
+				routerLinkActive="active"
+				[routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+				class="nav-item">
+					<span class="nav-icon">{{ item.icon }}</span>
+					<span>{{ item.label }}</span>
 			</a>
 		</nav>
 
@@ -39,46 +40,24 @@
 				</button>
 				<span [class.profile-email-empty]="!hasUserEmail">{{ userEmailDisplay }}</span>
 			</div>
+			<button class="icon-button profile-logout-button" type="button" (click)="logout()" aria-label="Wyloguj" title="Wyloguj">
+				<svg viewBox="0 0 24 24" aria-hidden="true">
+					<path d="M10 17l5-5-5-5M15 12H3" />
+					<path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6" />
+				</svg>
+			</button>
 		</div>
 	</aside>
 
 	<main class="dashboard-content">
 		<header class="topbar">
 			<div class="topbar-actions">
-				<label class="search-box">
-					<input type="text" placeholder="Search..." />
-					<span>⌕</span>
-				</label>
 				<button class="icon-button" type="button">🔔</button>
-				<button class="primary-button" type="button">+ Add widget</button>
-				<div class="account-menu" (click)="$event.stopPropagation()">
-					<button
-						class="icon-button account-menu-trigger"
-						type="button"
-						(click)="toggleAccountMenu($event)"
-						aria-label="Menu konta"
-						title="Menu konta"
-						[attr.aria-expanded]="isAccountMenuOpen"
-						aria-haspopup="menu">
-						<svg class="account-menu-arrow" viewBox="0 0 24 24" aria-hidden="true">
-							<path d="M6 9l6 6 6-6" />
-						</svg>
-					</button>
-
-					<div *ngIf="isAccountMenuOpen" class="account-menu-dropdown" role="menu" aria-label="Opcje konta">
-						<div class="account-menu-theme-row">
-							<span>Theme</span>
-							<app-theme-toggle class="account-menu-theme-toggle"></app-theme-toggle>
-						</div>
-						<div class="account-menu-separator" role="separator" aria-hidden="true"></div>
-						<button class="account-menu-item" type="button" role="menuitem" (click)="openAccountSettings($event)">Account settings</button>
-						<div class="account-menu-separator" role="separator" aria-hidden="true"></div>
-						<button class="account-menu-item account-menu-item-danger" type="button" role="menuitem" (click)="logout()">Logout</button>
-					</div>
-				</div>
+				<app-theme-toggle class="dashboard-theme-switch"></app-theme-toggle>
 			</div>
 		</header>
 
+		<div *ngIf="isDashboardView" class="dashboard-home-content">
 		<section class="stats-grid">
 			<article class="stat-card" *ngFor="let card of statCards" [attr.data-accent]="card.accent">
 				<div class="stat-icon">{{ card.icon }}</div>
@@ -192,6 +171,14 @@
 				</div>
 			</article>
 		</section>
+		</div>
+
+		<div class="route-content">
+			<router-outlet
+				(activate)="onChildRouteActivate()"
+				(deactivate)="onChildRouteDeactivate()">
+			</router-outlet>
+		</div>
 	</main>
 
 </div>

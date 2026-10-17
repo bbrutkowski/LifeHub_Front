@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ThemeToggle } from '../../../../core/components/theme-toggle/theme-toggle';
 import { UserProfile, UserService, UserSession } from '../../../../core/services/user-service';
@@ -8,13 +8,14 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { UserProfileModal, UserProfilePreferences } from '../../components/user-profile-modal/user-profile-modal';
 import { environment } from '../../../../../environments/environment';
 import { Observable, of, switchMap } from 'rxjs';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 type UserPreferences = UserProfilePreferences;
 
 type NavItem = {
   label: string;
   icon: string;
-  active?: boolean;
+  route?: string;
 };
 
 type StatCard = {
@@ -48,7 +49,7 @@ type ReminderItem = {
 @Component({
   standalone: true,
   selector: 'app-dashboard',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, ThemeToggle, UserProfileModal],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, RouterLinkActive, RouterOutlet, ThemeToggle, UserProfileModal],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -61,7 +62,7 @@ export class Dashboard implements OnInit {
   userAvatarUrl = '';
   isEditProfileModalOpen = false;
   isSavingProfile = false;
-  isAccountMenuOpen = false;
+  isDashboardView = true;
   isSavingPassword = false;
   isLoadingSessions = false;
   sessions: UserSession[] = [];
@@ -113,20 +114,12 @@ export class Dashboard implements OnInit {
     return !!this.userAvatarUrl;
   }
 
-  @HostListener('document:click')
-  onDocumentClick(): void {
-    this.isAccountMenuOpen = false;
+  onChildRouteActivate(): void {
+    this.isDashboardView = false;
   }
 
-  toggleAccountMenu(event: MouseEvent): void {
-    event.stopPropagation();
-    this.isAccountMenuOpen = !this.isAccountMenuOpen;
-  }
-
-  openAccountSettings(event: MouseEvent): void {
-    event.stopPropagation();
-    this.isAccountMenuOpen = false;
-    this.openEditProfileModal();
+  onChildRouteDeactivate(): void {
+    this.isDashboardView = true;
   }
 
   manageSessions(): void {
@@ -226,7 +219,6 @@ export class Dashboard implements OnInit {
   }
 
   logout(): void {
-    this.isAccountMenuOpen = false;
     this.userService.logoutCurrentSession().subscribe({
       next: () => this.authService.logout('/login'),
       error: () => this.authService.logout('/login'),
@@ -234,7 +226,6 @@ export class Dashboard implements OnInit {
   }
 
   openEditProfileModal(): void {
-    this.isAccountMenuOpen = false;
     this.isEditProfileModalOpen = true;
   }
 
@@ -427,14 +418,14 @@ export class Dashboard implements OnInit {
   }
 
   readonly navItems: NavItem[] = [
-    { label: 'Dashboard', icon: '⌂', active: true },
-    { label: 'Finanse', icon: '$' },
-    { label: 'Zadania', icon: '☑' },
-    { label: 'Podróże', icon: '✈' },
-    { label: 'Nawyki', icon: '◔' },
-    { label: 'Kalendarz', icon: '☰' },
-    { label: 'Notatki', icon: '✎' },
-    { label: 'Analizy', icon: '⌘' },
+    { label: 'Dashboard', icon: '⌂', route: '/dashboard' },
+    { label: 'Finance', icon: '$', route: '/dashboard/finances' },
+    { label: 'Zadania', icon: '☑', route: '/dashboard/tasks' },
+    { label: 'Podróże', icon: '✈', route: '/dashboard/travel' },
+    { label: 'Nawyki', icon: '◔', route: '/dashboard/habits' },
+    { label: 'Kalendarz', icon: '☰', route: '/dashboard/calendar' },
+    { label: 'Notatki', icon: '✎', route: '/dashboard/notes' },
+    { label: 'Analizy', icon: '⌘', route: '/dashboard/analytics' },
   ];
 
   readonly statCards: StatCard[] = [
