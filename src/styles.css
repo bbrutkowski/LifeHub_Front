@@ -10,6 +10,7 @@
   --page-max-width: 1600px;
   --page-gutter: clamp(16px, 2vw, 32px);
   --page-section-gap: clamp(12px, 1.4vw, 20px);
+  --workspace-content-gutter: clamp(2px, 0.2vw, 4px);
 
   /* Backgrounds */
   --bg-primary: #f8fafc;
@@ -311,5 +312,4 @@ html[data-theme="dark"] .mat-form-field-appearance-outline:hover .mat-form-field
 	background: rgba(255,255,255,0.85);
 	border: 1px solid rgba(0,0,0,0.08);
 }
-
 

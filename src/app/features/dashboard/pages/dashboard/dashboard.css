@@ -19,6 +19,9 @@ html[data-theme="dark"] .dashboard-shell {
 }
 
 .sidebar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   flex-direction: column;
   gap: clamp(12px, 1vw, 18px);
@@ -144,9 +147,33 @@ html[data-theme="dark"] .dashboard-shell {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex: 1;
   font-size: 12px;
   color: var(--text-muted);
   min-width: 0;
+}
+
+.profile-logout-button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.profile-logout-button:hover {
+  color: var(--error);
+  background: var(--error-light);
+}
+
+.profile-logout-button svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
 }
 
 .profile-name-button {
@@ -178,7 +205,27 @@ html[data-theme="dark"] .dashboard-shell {
   gap: clamp(8px, 0.8vw, 14px);
   padding: clamp(6px, 0.8vw, 10px);
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.dashboard-home-content {
+  display: contents;
+}
+
+.route-content {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.route-content > * {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
 }
 
 .topbar {
@@ -225,27 +272,6 @@ html[data-theme="dark"] .dashboard-shell {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
-
-.search-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 180px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--border-primary);
-  background: var(--surface-primary);
-  box-shadow: var(--shadow-sm);
-}
-
-.search-box input {
-  width: 100%;
-  border: 0;
-  outline: none;
-  background: transparent;
-  color: var(--text-primary);
-  font: inherit;
 }
 
 .icon-button,
@@ -741,16 +767,20 @@ html[data-theme="dark"] .sidebar .profile-meta {
     overflow: visible;
   }
 
+  .route-content {
+    flex: none;
+  }
+
+  .route-content > * {
+    flex: none;
+  }
+
   .topbar {
     flex-direction: column;
   }
 
   .topbar-actions {
     width: 100%;
-  }
-
-  .search-box {
-    flex: 1 1 220px;
   }
 
   .stats-grid,
@@ -790,10 +820,6 @@ html[data-theme="dark"] .sidebar .profile-meta {
 
   .topbar h1 {
     font-size: 24px;
-  }
-
-  .search-box {
-    min-width: 0;
   }
 
   .stats-grid,
